@@ -4,398 +4,374 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="theme-color" content="#0f1512">
-<title>Протокол 31</title>
+<title>Протокол 31 - Личный кабинет</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="https://cdn.tailwindcss.com/3.4.17"></script>
 <script src="https://cdn.jsdelivr.net/npm/lucide@0.383.0/dist/umd/lucide.min.js"></script>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#0f1512;--surf:#161f1b;--line:rgba(236,229,211,.11);--ink:#ece5d3;--mute:#8d978f;--brass:#c4a76b}
+:root{--bg:#0f1512;--surf:#161f1b;--line:rgba(236,229,211,.11);--ink:#ece5d3;--mute:#8d978f;--brass:#c4a76b;--brass-dim:rgba(196,167,107,.2)}
 *{-webkit-tap-highlight-color:transparent;box-sizing:border-box}
-html,body{background:var(--bg)}
-body{margin:0;color:var(--ink);font:400 14.5px/1.5 Manrope,system-ui,sans-serif;background:linear-gradient(#16211c,var(--bg) 380px) no-repeat var(--bg);overscroll-behavior:none}
+html,body{background:var(--bg);margin:0;color:var(--ink);font:400 14.5px/1.5 Manrope,sans-serif;overscroll-behavior:none}
 button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;text-align:left}
-:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
-.serif,h1,h2{font-family:'Cormorant Garamond',Georgia,serif;font-variant-numeric:lining-nums;margin:0}
+.serif,h1,h2,h3{font-family:'Cormorant Garamond',serif;font-variant-numeric:lining-nums;margin:0}
 .mute{color:var(--mute)}
-.sec{margin-top:26px}
 
-/* profile */
-.ava{flex:none;width:54px;height:54px;border-radius:50%;display:grid;place-items:center;overflow:hidden;background:rgba(196,167,107,.12);box-shadow:0 0 0 1px rgba(196,167,107,.55);color:var(--brass);font:600 24px 'Cormorant Garamond',serif}
+/* Header & Avatar */
+.ava{width:50px;height:50px;border-radius:50%;display:grid;place-items:center;overflow:hidden;background:var(--brass-dim);box-shadow:0 0 0 1px rgba(196,167,107,.55);color:var(--brass);font:600 22px 'Cormorant Garamond',serif;flex-shrink:0}
 .ava img{width:100%;height:100%;object-fit:cover}
-.badge{display:inline-block;margin-top:5px;padding:2px 10px;border-radius:99px;border:1px solid rgba(196,167,107,.55);color:var(--brass);font-size:11px;font-weight:700;letter-spacing:.08em}
-.t0{font:600 46px/1 'Cormorant Garamond',serif;font-variant-numeric:lining-nums}
-.t1{font:500 22px/1 'Cormorant Garamond',serif;color:var(--mute)}
-.rule{flex:1;height:1px;background:var(--line);margin:0 14px 7px}
-.bar{height:2px;background:var(--line);border-radius:2px;margin-top:12px}
-.bar i{display:block;height:100%;width:0;background:var(--brass);border-radius:2px;transition:width 1.2s cubic-bezier(.2,.8,.2,1)}
-.mx{display:grid;grid-template-columns:1fr 1fr;margin-top:22px}
-.mx>div{padding:14px 0 12px;border-top:1px solid var(--line)}
-.mx>div:nth-child(even){padding-left:18px;border-left:1px solid var(--line)}
-.mx b{display:block;font:600 32px/1.1 'Cormorant Garamond',serif;font-variant-numeric:lining-nums}
-.mx b small{font:500 13px Manrope,sans-serif;color:var(--mute);margin-left:2px}
-.mx span{font-size:12px;color:var(--mute)}
-.sync{width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 0;border-top:1px solid var(--line);font-size:12px;color:var(--mute)}
-.sync .l{display:flex;align-items:center;gap:8px}
-.sync .l i{width:6px;height:6px;border-radius:50%;background:#58625b}
-.sync[data-ok="1"] .l i{background:var(--brass)}
-.sync svg{width:14px;height:14px}
+.badge{display:inline-block;margin-top:2px;padding:2px 10px;border-radius:99px;border:1px solid rgba(196,167,107,.55);color:var(--brass);font-size:10px;font-weight:700;letter-spacing:.08em}
 
-/* nav */
-#nav{position:sticky;top:0;z-index:20;display:grid;grid-template-columns:repeat(5,1fr);margin:26px -16px 0;padding:0 8px;background:var(--bg);border-bottom:1px solid var(--line)}
-.tab{position:relative;display:flex;flex-direction:column;align-items:center;gap:5px;padding:12px 0 11px;color:var(--mute);font-size:11.5px;font-weight:600;transition:color .2s}
-.tab svg{width:22px;height:22px;stroke-width:1.5}
-.tab.on{color:var(--brass)}
-.tab.on::after{content:"";position:absolute;left:24%;right:24%;bottom:-1px;height:2px;border-radius:2px;background:var(--brass)}
+/* Tabs */
+.tabs{display:flex;background:var(--surf);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:20;padding:0 10px}
+.tab{flex:1;text-align:center;padding:14px 0;font-size:13px;font-weight:600;color:var(--mute);border-bottom:2px solid transparent;transition:all .2s;display:flex;flex-direction:column;align-items:center;gap:4px}
+.tab svg{width:20px;height:20px}
+.tab.active{color:var(--brass);border-bottom-color:var(--brass)}
 
-/* panel */
-.card{margin-top:20px;padding:20px 18px 6px;background:var(--surf);border:1px solid var(--line);border-radius:18px}
-.swap{animation:swap .25s ease-out}
-@keyframes swap{from{opacity:0;transform:translateY(5px)}}
-.ttl{font-size:28px;font-weight:600;line-height:1.1}
-.cn{font-size:13px;color:var(--brass);font-weight:600;white-space:nowrap}
-.task{display:flex;gap:14px;align-items:flex-start;width:100%;padding:15px 0;border-top:1px solid var(--line)}
-.box{flex:none;width:22px;height:22px;margin-top:1px;border-radius:50%;display:grid;place-items:center;border:1.5px solid rgba(236,229,211,.3);color:transparent;transition:all .2s}
-.box svg{width:13px;height:13px;stroke-width:3}
+/* Face Map Canvas */
+.canvas-container{position:relative;width:100%;aspect-ratio:3/4;border-radius:16px;overflow:hidden;background:#050706;border:1px solid var(--line);margin-bottom:20px;display:flex;align-items:center;justify-content:center}
+canvas{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;z-index:1}
+.canvas-overlay{position:absolute;inset:0;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(15,21,18,0.8);text-align:center;padding:20px}
+
+/* Metrics Grid */
+.mx{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:24px}
+.mx-card{background:var(--surf);border:1px solid var(--line);border-radius:12px;padding:12px}
+.mx-card b{display:block;font:600 28px/1 'Cormorant Garamond',serif;color:var(--brass)}
+.mx-card span{font-size:11px;color:var(--mute);text-transform:uppercase;letter-spacing:0.05em}
+
+/* Tips */
+.tips-box{background:rgba(196,167,107,.05);border-left:2px solid var(--brass);padding:16px;border-radius:0 12px 12px 0;margin-bottom:20px}
+.tips-box h3{font-size:18px;color:var(--brass);margin-bottom:8px}
+.tips-box ul{margin:0;padding-left:18px;font-size:13px;color:#c9c3b3}
+.tips-box li{margin-bottom:6px}
+
+/* Gallery */
+.gal-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.gal-item{background:var(--surf);border:1px solid var(--line);border-radius:12px;overflow:hidden;aspect-ratio:3/4;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.gal-item img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1}
+.gal-item .ui{position:absolute;inset:0;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(0,0,0,0.5);color:var(--ink);transition:opacity .2s}
+.gal-item:not(.empty) .ui{opacity:0}
+.gal-item:not(.empty):active .ui{opacity:1}
+.gal-label{position:absolute;bottom:8px;left:8px;z-index:3;background:rgba(15,21,18,0.8);padding:2px 8px;border-radius:6px;font-size:11px;font-weight:600;color:var(--brass)}
+
+/* Protocol Checklist */
+.task{display:flex;gap:14px;padding:14px;background:var(--surf);border:1px solid var(--line);border-radius:12px;margin-bottom:8px;transition:all .2s}
+.task .box{width:22px;height:22px;border-radius:50%;border:2px solid var(--mute);display:flex;align-items:center;justify-content:center;color:transparent;flex-shrink:0}
 .task.on .box{background:var(--brass);border-color:var(--brass);color:var(--bg)}
-.task b{display:block;font-size:15px;font-weight:600;line-height:1.3;transition:color .2s}
-.task small{display:block;margin-top:2px;font-size:13px;line-height:1.45;color:var(--mute)}
-.task.on b{color:var(--mute)}
-.tm{flex:none;margin-top:2px;font-size:12px;color:var(--mute)}
+.task b{display:block;font-size:15px;color:var(--ink)}
+.task.on b{text-decoration:line-through;color:var(--mute)}
+.task p{margin:2px 0 0;font-size:12px;color:var(--mute)}
 
-/* calendar */
-.days{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}
-.day{position:relative;display:flex;flex-direction:column;min-height:112px;padding:12px;border-radius:16px;background:var(--surf);border:1px solid var(--line);transition:border-color .2s,transform .15s}
-.day:active{transform:scale(.97)}
-.day .tp{display:flex;align-items:center;justify-content:space-between;font-size:11.5px;color:var(--mute)}
-.day .tp span{display:flex;gap:5px;align-items:center}
-.day .tp svg{width:13px;height:13px}
-.day .ck{width:17px;height:17px;border-radius:50%;display:grid;place-items:center;background:var(--brass);color:var(--bg)}
-.day .ck svg{width:10px;height:10px;stroke-width:3.4}
-.day .n{margin:2px 0 6px;font:600 42px/1 'Cormorant Garamond',serif;font-variant-numeric:lining-nums}
-.day .p{margin-top:auto;font-size:11.5px;line-height:1.3;color:var(--mute)}
-.day.cur{border-color:var(--brass)}
-.day.cur .n{color:var(--brass)}
-
-/* legal */
-.legal{padding-top:20px;border-top:1px solid var(--line);font-size:12.5px;line-height:1.5;color:var(--mute)}
-.ghost{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin-top:14px;padding:13px;border-radius:14px;border:1px solid rgba(196,167,107,.5);color:var(--brass);font-weight:600;font-size:14px;text-align:center}
-.ghost svg{width:16px;height:16px}
-
-/* sheet */
-#sheet{position:fixed;inset:0;z-index:50;pointer-events:none}
-#sheet.open{pointer-events:auto}
-#bd{position:absolute;inset:0;background:rgba(5,8,6,.7);opacity:0;transition:opacity .3s}
-#sheet.open #bd{opacity:1}
-#sp{position:absolute;left:0;right:0;bottom:0;max-width:448px;margin:0 auto;max-height:90vh;overflow:auto;padding:10px 20px calc(env(safe-area-inset-bottom,0px) + 24px);background:var(--surf);border:1px solid var(--line);border-bottom:0;border-radius:24px 24px 0 0;transform:translateY(105%);transition:transform .38s cubic-bezier(.2,.9,.25,1)}
-#sheet.open #sp{transform:none}
-.grab{width:38px;height:4px;margin:0 auto 16px;border-radius:9px;background:rgba(236,229,211,.18)}
-.xb{flex:none;width:34px;height:34px;display:grid;place-items:center;border-radius:50%;border:1px solid var(--line);color:var(--mute)}
-.xb svg{width:16px;height:16px}
-.hd{font-size:48px;font-weight:600;line-height:1;color:var(--brass)}
-.res{margin:22px 0;padding-left:14px;border-left:2px solid var(--brass)}
-.res b{font-size:13px}
-.res p{margin:2px 0 0;font-size:13.5px;line-height:1.5;color:#c9c3b3}
-.shot{display:block;width:88px;height:88px;margin-bottom:14px;object-fit:cover;border-radius:12px;border:1px solid var(--line)}
-.cta{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;padding:16px;border-radius:14px;background:var(--brass);color:#14110a;font-weight:700;font-size:15px;text-align:center;transition:transform .15s}
-.cta:active{transform:scale(.98)}
-.cta svg{width:18px;height:18px}
-.lg{margin:16px 0 22px;padding:0;list-style:none}
-.lg li{display:flex;gap:11px;margin-top:11px;font-size:13.5px;line-height:1.5;color:#c9c3b3}
-.lg li::before{content:"";flex:none;width:5px;height:5px;margin-top:8px;border-radius:50%;background:var(--brass)}
-#toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 22px);z-index:60;transform:translate(-50%,24px);opacity:0;padding:11px 18px;border-radius:99px;background:var(--ink);color:#14110a;font-size:13px;font-weight:600;white-space:nowrap;pointer-events:none;transition:all .3s}
-#toast.on{opacity:1;transform:translate(-50%,0)}
-@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+.view{display:none;animation:fade .3s ease}
+.view.active{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
 </style>
 </head>
 <body>
-<main class="max-w-md mx-auto px-4" style="padding-top:calc(env(safe-area-inset-top,0px) + 22px);padding-bottom:calc(env(safe-area-inset-bottom,0px) + 40px)">
 
-  <header>
-    <div class="flex items-center gap-4">
-      <div class="ava" id="av"><span id="ini">Г</span></div>
-      <div class="min-w-0">
-        <h1 class="truncate" id="nm" style="font-size:28px;font-weight:600;line-height:1.1">Гость</h1>
-        <span class="badge" id="bdg">ACTIVE PRO</span>
+<header class="p-4 flex items-center justify-between" style="padding-top:calc(env(safe-area-inset-top,0px) + 16px)">
+  <div class="flex items-center gap-3">
+    <div class="ava" id="ava-el"><span id="ava-ini">?</span></div>
+    <div>
+      <h1 id="user-name" class="text-xl font-bold leading-none">Гость</h1>
+      <span class="badge">PRO АНАЛИЗ</span>
+    </div>
+  </div>
+</header>
+
+<div class="tabs">
+  <button class="tab active" data-target="view-map"><i data-lucide="scan-face"></i>Карта Лица</button>
+  <button class="tab" data-target="view-protocol"><i data-lucide="check-square"></i>Протокол</button>
+  <button class="tab" data-target="view-gallery"><i data-lucide="image"></i>Галерея</button>
+</div>
+
+<main class="p-4 pb-20">
+  
+  <!-- VIEW: MAP -->
+  <div id="view-map" class="view active">
+    <div class="canvas-container">
+      <canvas id="face-canvas"></canvas>
+      <div id="canvas-overlay" class="canvas-overlay">
+        <i data-lucide="camera" style="width:32px;height:32px;color:var(--brass);margin-bottom:12px"></i>
+        <p class="font-semibold text-sm">Нет базового фото</p>
+        <p class="text-xs mute mt-1">Перейди в Галерею и сделай фото "День 1", чтобы нейросеть построила разметку золотого сечения.</p>
       </div>
     </div>
 
-    <div class="flex items-end mt-7">
-      <div><p class="mute" style="font-size:12px;margin:0 0 4px">Текущий тир</p><div class="t0" id="t0">MTN</div></div>
-      <div class="rule"></div>
-      <div class="t1" id="t1">Chadlite</div>
+    <div class="mx">
+      <div class="mx-card"><span id="m-jaw-label">Индекс челюсти</span><b id="m-jaw">0</b></div>
+      <div class="mx-card"><span id="m-fwhr-label">FWHR Пропорция</span><b id="m-fwhr">0</b></div>
+      <div class="mx-card"><span id="m-asym-label">Симметрия</span><b id="m-asym">0%</b></div>
+      <div class="mx-card"><span id="m-gold-label">Золотое сечение</span><b id="m-gold">0/10</b></div>
     </div>
-    <div class="bar"><i id="tp"></i></div>
-    <div class="flex justify-between mt-2 mute" style="font-size:12px"><span id="tpt">64% пути</span><span id="dn">День 1 из 31</span></div>
 
-    <div class="mx" id="mx"></div>
+    <div class="tips-box">
+      <h3>Персональный План</h3>
+      <ul id="tips-list">
+        <li>Спи на спине, чтобы избежать асимметрии лица.</li>
+        <li>Практикуй Mewing: язык полностью прижат к нёбу.</li>
+        <li>Снизь соль до 3г в день, чтобы убрать утреннюю отёчность.</li>
+      </ul>
+    </div>
+  </div>
 
-    <button class="sync" id="sync"><span class="l"><i></i><span id="st">Синхронизация…</span></span><i data-lucide="refresh-cw"></i></button>
-    <p class="mute" id="demo" style="font-size:11.5px;margin:0">Метрики демонстрационные, пока бот не передал результаты анализа.</p>
-  </header>
+  <!-- VIEW: PROTOCOL -->
+  <div id="view-protocol" class="view">
+    <h2 class="text-2xl font-bold serif text-[var(--brass)] mb-4">Ежедневный Трекинг</h2>
+    <div id="tasks-container"></div>
+  </div>
 
-  <nav id="nav" aria-label="Разделы"></nav>
-  <section id="panel"></section>
+  <!-- VIEW: GALLERY -->
+  <div id="view-gallery" class="view">
+    <h2 class="text-2xl font-bold serif text-[var(--brass)] mb-4">Контрольные Срезы</h2>
+    <p class="text-xs mute mb-4">Делай фото при одинаковом освещении и ракурсе. День 1 используется для Карты Лица.</p>
+    
+    <div class="gal-grid" id="gallery-container">
+      <!-- Галерея рендерится через JS -->
+    </div>
+  </div>
 
-  <section class="sec">
-    <h2 class="ttl">Календарь трансформации</h2>
-    <p class="mute" style="margin:4px 0 0;font-size:13px">Выбери день, чтобы открыть протокол.</p>
-    <div class="days" id="cal"></div>
-  </section>
-
-  <section class="sec legal">
-    <p style="margin:0">Сервис носит развлекательный характер и не заменяет врача. Автор не несёт ответственности за здоровье и результаты.</p>
-    <button class="ghost" id="lgb"></button>
-  </section>
 </main>
 
-<div id="sheet" aria-hidden="true"><div id="bd" data-x></div><div id="sp" role="dialog" aria-modal="true"><div class="grab"></div><div id="sb"></div></div></div>
-<input id="cam" type="file" accept="image/*" capture="user" hidden>
-<div id="toast" role="status"></div>
+<input type="file" id="camera-input" accept="image/*" capture="user" hidden>
 
 <script>
-/* ============ НАСТРОЙКИ ============
-   API_URL — адрес бэкенда твоего бота (например https://bot.example.com/api).
-   Пусто = прогресс синхронизируется только через Telegram Cloud Storage.
-   Бэкенд получает заголовок  Authorization: tma <initData>  — проверь подпись initData токеном бота.
-   Ожидаемые методы:
-     GET  /profile  -> { active, plan, tier, nextTier, tierProgress, startedAt,
-                         metrics:{jaw,fwhr,asymmetry,golden}, state? }
-     PUT  /state    <- { state }
-     POST /photo    <- { day, image }  (dataURL, jpeg)                                   */
-const CONFIG={API_URL:''};
-
-const tg=window.Telegram&&window.Telegram.WebApp;
-try{if(tg){tg.ready();tg.expand();tg.setHeaderColor('#0f1512');tg.setBackgroundColor('#0f1512');tg.disableVerticalSwipes&&tg.disableVerticalSwipes()}}catch(e){}
-const hap=k=>{try{k==='ok'?tg.HapticFeedback.notificationOccurred('success'):tg.HapticFeedback.selectionChanged()}catch(e){}};
-const $=s=>document.querySelector(s),icons=()=>window.lucide&&lucide.createIcons();
-
-/* ============ ДАННЫЕ ============ */
-const SEC={
- morning:{i:'sunrise',n:'Утро',t:'Утренняя рутина',s:'Лимфодренаж и уход',items:[
-  ['Стакан воды','300–400 мл сразу после пробуждения, до кофе','1 мин'],
-  ['Лимфодренаж лица','Лёгкие движения от центра лица к вискам, затем вниз по шее к ключицам. Без давления','5 мин'],
-  ['Прохладное умывание','Мягкий гель, затем 30 секунд прохладной воды — помогает убрать утреннюю отёчность','2 мин'],
-  ['Сыворотка с витамином C','2–3 капли на сухую кожу, подожди минуту','1 мин'],
-  ['Крем и SPF 30+','Увлажняющий крем, затем солнцезащитный — даже в пасмурную погоду','2 мин']]},
- evening:{i:'moon',n:'Вечер',t:'Вечерний уход',s:'Дерматология и расслабление мышц',items:[
-  ['Двойное очищение','Гидрофильное масло, затем мягкий гель — смыть SPF и городскую грязь','3 мин'],
-  ['Актив по графику','Ретиноид или кислота через вечер, по переносимости. Не смешивай в один вечер','2 мин'],
-  ['Массаж жевательных мышц','Круговые движения пальцами по скулам и челюсти, чтобы снять напряжение','3 мин'],
-  ['Растяжка шеи','Медленные наклоны в стороны по 20 секунд, без рывков','2 мин'],
-  ['Барьерный крем','Крем с церамидами восстанавливает кожу после активов','1 мин']]},
- night:{i:'bed',n:'На ночь',t:'На ночь',s:'Mewing, осанка и сон',items:[
-  ['Mewing-проверка','Язык полностью на нёбе, зубы слегка касаются, губы закрыты, дыхание носом','2 мин'],
-  ['Осанка у стены','Затылок, лопатки и таз у стены, подбородок слегка назад — 10 повторений','3 мин'],
-  ['Экраны выключены','Отложи телефон за 45 минут до сна','45 мин'],
-  ['Прохладная спальня','Комфортно: 18–20 °C, проветри комнату перед сном','5 мин'],
-  ['Сон 7–9 часов','Ложись на спину или бок, шея и голова в нейтральном положении','7–9 ч']]},
- food:{i:'utensils',n:'Питание',t:'Питание',s:'Соль, белок и вода',items:[
-  ['Белок в каждом приёме','Ориентир — 1,6–2 г на кг веса: яйца, рыба, птица, творог, бобовые','весь день'],
-  ['Соль до 5 г','Меньше колбас, соусов и снеков — лишняя соль задерживает воду и даёт отёки','весь день'],
-  ['Вода по норме','Около 30 мл на кг веса, равномерно в течение дня','весь день'],
-  ['Минимум сахара и алкоголя','Алкоголь и сладкое заметно ухудшают кожу и сон','весь день'],
-  ['Овощи и омега-3','Овощи в каждый приём, жирная рыба два раза в неделю','весь день']]},
- climate:{i:'thermometer',n:'Климат',t:'Климат',s:'Защита кожи и влажность',items:[
-  ['SPF на улице','Обновляй каждые 2 часа при долгом пребывании на солнце','утро'],
-  ['Влажность 40–60%','Проверь гигрометром, при сухом воздухе включи увлажнитель','дома'],
-  ['Защита от холода','Барьерный крем перед выходом, шарф закрывает щёки и подбородок','зимой'],
-  ['Тёплый, не горячий душ','Горячая вода сушит кожу — до 10 минут','вечер'],
-  ['Термальная вода в жару','Спрей и больше воды, лёгкий крем вместо плотного','летом']]}
-};
-const DAYS=[
- {d:1,t:'Точка отсчёта',g:'зафиксировать исходное состояние',r:'Базовые фото и привычка, с которой легко сравнивать прогресс.',items:[
-  ['Контрольное фото','Анфас, профиль и 3/4 при ровном дневном свете, без фильтров'],
-  ['Патч-тест средств','Нанеси новые средства на запястье и подожди 24 часа'],
-  ['Аудит питания','Проверь этикетки: сколько соли в привычных продуктах'],
-  ['Три напоминания','Утро, вечер и перед сном — настрой сигналы']]},
- {d:3,t:'Запуск режима',g:'закрепить ритм',r:'Меньше утренней отёчности, режим перестаёт требовать усилий.',items:[
-  ['Лимфодренаж без пропусков','Три дня подряд, утром после умывания'],
-  ['Mewing 30 минут','Суммарно за день: язык на нёбе, губы закрыты, дыхание носом'],
-  ['Реакция кожи','Покраснение или стянутость — пропусти актив на один вечер'],
-  ['Вода по норме','Около 30 мл на кг веса, отмечай стаканы']]},
- {d:7,t:'Первая неделя',g:'сверить первые изменения',r:'Ровнее тон кожи, утреннее лицо выглядит свежее.',items:[
-  ['Фото-сравнение','Тот же свет и ракурсы, что в день 1'],
-  ['Актив по графику','Если кожа спокойна — повтори ретиноид или кислоту'],
-  ['Осанка: две серии','«Подбородок назад» по 10 повторений утром и вечером'],
-  ['Средний сон','Посчитай: цель — от 7 часов в среднем за неделю']]},
- {d:14,t:'Середина пути',g:'усилить то, что работает',r:'Стабильный режим и первые заметные отличия в коже и контуре лица.',items:[
-  ['Фото и сравнение','Сопоставь с днями 1 и 7'],
-  ['Частота активов','Можно перейти на 3 вечера в неделю, только без раздражения'],
-  ['Изометрия для шеи','3 подхода по 20 секунд в каждую сторону, без рывков'],
-  ['Ревизия питания','Проверь среднюю соль и белок за две недели']]},
- {d:28,t:'Финишная прямая',g:'подготовиться к финалу',r:'Привычки закреплены, условия для честного итогового сравнения готовы.',items:[
-  ['Фото недели 4','Сравни с днём 14'],
-  ['Запасы и SPF','Проверь, чего хватит до финала, и докупи заранее'],
-  ['Сон и стресс','Три вечера подряд — отбой в одно время'],
-  ['Место для финального фото','Выбери свет и угол, чтобы условия совпали с днём 1']]},
- {d:31,t:'Финал',g:'подвести итоги',r:'Полная картина трансформации и личный протокол на будущее.',items:[
-  ['Финальное фото','Тот же свет, расстояние и ракурсы, что в день 1'],
-  ['Коллаж 1–31','Сложи фото дней 1, 7, 14, 28 и 31 рядом'],
-  ['Три привычки','Оставь те, что дали эффект'],
-  ['План на следующий цикл','Запиши, что усилить']]}
-];
-const DEMO={jaw:87,fwhr:1.94,asymmetry:2.8,golden:8.6};
-const LEGAL=[
- 'Сервис носит исключительно развлекательный и информационный характер и не является медицинской, дерматологической, диетологической или иной профессиональной консультацией.',
- 'Показатели (индекс челюсти, FWHR, асимметрия, золотое сечение) не являются диагнозом.',
- 'Автор и владелец приложения не несут ответственности за вред здоровью, реакции кожи, результаты внешности и любые решения, принятые на основе приложения.',
- 'Перед изменением питания, началом ретиноидов, кислот или физических упражнений проконсультируйся с врачом, особенно при беременности, хронических заболеваниях и аллергиях.',
- 'При раздражении, боли или ухудшении самочувствия прекрати выполнять протокол и обратись к врачу.',
- 'Используя приложение, ты подтверждаешь, что тебе исполнилось 18 лет и ты действуешь на собственный риск.'
-];
-
-/* ============ СОСТОЯНИЕ И СИНХРОНИЗАЦИЯ ============
-   log[дата] и proto[день] — битовые маски выполненных задач (компактно для Cloud Storage). */
-const KEY='lm31',PKEY='lm31p',KEYS=Object.keys(SEC);
-let S={start:Date.now(),log:{},proto:{},ack:false,t:0},P={};
-try{const r=JSON.parse(localStorage.getItem(KEY));if(r)S={...S,...r}}catch(e){}
-try{P=JSON.parse(localStorage.getItem(PKEY))||{}}catch(e){}
-const saveLocal=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
-const savePhotos=()=>{try{localStorage.setItem(PKEY,JSON.stringify(P))}catch(e){}};
-saveLocal();
-
-const CLOUD=!!(tg&&tg.CloudStorage&&tg.isVersionAtLeast&&tg.isVersionAtLeast('6.9'));
-const cloudGet=()=>new Promise(r=>{if(!CLOUD)return r(null);const to=setTimeout(()=>r(null),2500);try{tg.CloudStorage.getItem(KEY,(e,v)=>{clearTimeout(to);try{r(v?JSON.parse(v):null)}catch(_){r(null)}})}catch(_){r(null)}});
-const cloudSet=v=>new Promise(r=>{if(!CLOUD)return r(false);const to=setTimeout(()=>r(false),2500);try{tg.CloudStorage.setItem(KEY,v,(e,ok)=>{clearTimeout(to);r(!e&&!!ok)})}catch(_){r(false)}});
-async function api(m,p,body){
- const r=await fetch(CONFIG.API_URL+p,{method:m,headers:{'Content-Type':'application/json','Authorization':'tma '+(tg?tg.initData:'')},body:body?JSON.stringify(body):undefined});
- if(!r.ok)throw new Error(r.status);return r.json().catch(()=>({}));
-}
-const ST={local:['Сохранено только на этом устройстве',0],syncing:['Синхронизация…',0],cloud:['Синхронизировано с Telegram',1],bot:['Синхронизировано с ботом',1],err:['Бот недоступен, сохранено на устройстве',0]};
-const setStatus=k=>{$('#st').textContent=ST[k][0];$('#sync').dataset.ok=ST[k][1]};
-
-let pt;
-function persist(){
- S.t=Date.now();
- const ks=Object.keys(S.log).sort();while(ks.length>45)delete S.log[ks.shift()];
- saveLocal();setStatus('syncing');clearTimeout(pt);pt=setTimeout(push,700);
-}
-async function push(){
- const cl=await cloudSet(JSON.stringify(S));let bot=null;
- if(CONFIG.API_URL){try{await api('PUT','/state',{state:S});bot=true}catch(e){bot=false}}
- setStatus(bot===false?'err':bot?'bot':cl?'cloud':'local');
-}
-function applyProfile(p){
- if(!p)return;
- if(p.plan||p.active!=null)$('#bdg').textContent=(p.active===false?'EXPIRED ':'ACTIVE ')+(p.plan||'PRO');
- if(p.tier)$('#t0').textContent=p.tier;
- if(p.nextTier)$('#t1').textContent=p.nextTier;
- if(p.tierProgress!=null){$('#tp').style.width=p.tierProgress+'%';$('#tpt').textContent=p.tierProgress+'% пути'}
- if(p.metrics){renderMetrics(p.metrics);$('#demo').hidden=true}
- if(p.startedAt)S.start=p.startedAt;
-}
-async function boot(){
- setStatus('syncing');
- const c=await cloudGet();
- if(c&&c.t>S.t){S={...S,...c};saveLocal()}
- let bot=false;
- if(CONFIG.API_URL){
-  try{
-   const p=await api('GET','/profile');applyProfile(p);
-   if(p.state&&p.state.t>S.t){S={...S,...p.state};saveLocal()}
-   bot=true;
-  }catch(e){renderAll();setStatus('err');return}
- }
- renderAll();
- setStatus(bot?'bot':CLOUD?'cloud':'local');
+// 1. Инициализация Telegram и получение данных
+const tg = window.Telegram && window.Telegram.WebApp;
+if(tg) {
+  tg.ready();
+  tg.expand();
+  tg.setHeaderColor('#0f1512');
+  tg.setBackgroundColor('#0f1512');
+  
+  const user = tg.initDataUnsafe?.user;
+  if(user) {
+    document.getElementById('user-name').innerText = user.first_name || 'Гость';
+    document.getElementById('ava-ini').innerText = (user.first_name || '?')[0].toUpperCase();
+    if(user.photo_url) {
+      document.getElementById('ava-el').innerHTML = `<img src="${user.photo_url}" alt="avatar">`;
+    }
+  }
 }
 
-/* ============ РЕНДЕР ============ */
-const today=()=>new Date().toLocaleDateString('sv');
-const dayNo=()=>Math.min(31,Math.max(1,Math.floor((Date.now()-S.start)/864e5)+1));
-const bit=(k,i)=>KEYS.indexOf(k)*5+i;
-const isOn=(k,i)=>((S.log[today()]||0)>>bit(k,i))&1;
-const pOn=(d,i)=>((S.proto[d]||0)>>i)&1;
-const cnt=k=>SEC[k].items.reduce((n,_,i)=>n+isOn(k,i),0);
-let tab='morning',curDay=null,mode='day';
+// 2. Чтение параметров из ссылки (от бота)
+const params = new URLSearchParams(window.location.search);
+const p_jaw = params.get('jaw') || '87';
+const p_fwhr = params.get('fwhr') || '1.94';
+const p_asym = params.get('asym') || '92.5';
+const p_gold = params.get('gold') || '8.6';
+const p_tips = params.get('tips');
 
-const row=(it,on,attr)=>`<li><button class="task ${on?'on':''}" ${attr} aria-pressed="${!!on}"><span class="box"><i data-lucide="check"></i></span><span class="grow"><b>${it[0]}</b><small>${it[1]}</small></span>${it[2]?`<span class="tm">${it[2]}</span>`:''}</button></li>`;
+document.getElementById('m-jaw').innerText = p_jaw;
+document.getElementById('m-fwhr').innerText = p_fwhr;
+document.getElementById('m-asym').innerText = p_asym + '%';
+document.getElementById('m-gold').innerText = p_gold + '/10';
 
-function renderMetrics(m){
- const r=[['Индекс челюсти',m.jaw,'/100'],['FWHR',m.fwhr,''],['Асимметрия',m.asymmetry,'%'],['Золотое сечение',m.golden,'/10']];
- $('#mx').innerHTML=r.map(x=>`<div><b>${x[1]}<small>${x[2]}</small></b><span>${x[0]}</span></div>`).join('');
-}
-function renderNav(){
- $('#nav').innerHTML=KEYS.map(k=>`<button class="tab ${k===tab?'on':''}" data-k="${k}" aria-pressed="${k===tab}"><i data-lucide="${SEC[k].i}"></i><span>${SEC[k].n}</span></button>`).join('');
-}
-function renderPanel(anim){
- const v=SEC[tab];
- $('#panel').innerHTML=`<div class="card ${anim?'swap':''}"><div class="flex items-start justify-between gap-3 mb-3"><div><h2 class="ttl">${v.t}</h2><p class="mute" style="margin:3px 0 0;font-size:13px">${v.s}</p></div><span class="cn">${cnt(tab)} из ${v.items.length}</span></div><ul style="list-style:none;margin:0;padding:0">${v.items.map((it,i)=>row(it,isOn(tab,i),`data-s="${tab}" data-i="${i}"`)).join('')}</ul></div>`;
-}
-function renderCal(){
- const n=dayNo(),cur=[...DAYS].reverse().find(x=>x.d<=n).d;
- $('#cal').innerHTML=DAYS.map(x=>{
-  const all=x.items.every((_,i)=>pOn(x.d,i));
-  return `<button class="day ${x.d===cur?'cur':''}" data-d="${x.d}"><div class="tp">День<span>${P[x.d]?'<i data-lucide="camera"></i>':''}${all?'<b class="ck"><i data-lucide="check"></i></b>':''}</span></div><div class="n">${x.d}</div><div class="p">${x.t}</div></button>`}).join('');
-}
-function renderSheet(){
- let h;
- if(mode==='legal'){
-  h=`<div class="flex items-start justify-between gap-3"><h2 class="ttl" style="font-size:30px">Юридическое уведомление</h2><button class="xb" data-x aria-label="Закрыть"><i data-lucide="x"></i></button></div><ul class="lg">${LEGAL.map(l=>`<li>${l}</li>`).join('')}</ul><button class="cta" data-ack><i data-lucide="${S.ack?'check':'shield-check'}"></i>${S.ack?'Принято':'Понимаю и принимаю'}</button>`;
- }else{
-  const x=DAYS.find(z=>z.d===curDay),ph=P[x.d];
-  h=`<div class="flex items-start justify-between gap-3"><div><p class="mute" style="margin:0;font-size:12px">Протокол</p><h2 class="hd">День ${x.d}</h2><p style="margin:8px 0 0;font-weight:600">${x.t}</p><p class="mute" style="margin:2px 0 0;font-size:13px">Цель: ${x.g}.</p></div><button class="xb" data-x aria-label="Закрыть"><i data-lucide="x"></i></button></div><ul style="list-style:none;margin:14px 0 0;padding:0">${x.items.map((it,i)=>row(it,pOn(x.d,i),`data-d="${x.d}" data-i="${i}"`)).join('')}</ul><div class="res"><b>Ожидаемый результат</b><p>${x.r}</p></div>${ph?`<img class="shot" src="${ph}" alt="Контрольное фото, день ${x.d}">`:''}<button class="cta" data-cam><i data-lucide="camera"></i>${ph?'Переснять контрольное фото':'Сделать контрольное фото'}</button>`;
- }
- $('#sb').innerHTML=h;icons();
-}
-function legalBtn(){$('#lgb').innerHTML=`<i data-lucide="${S.ack?'check':'scale'}"></i>${S.ack?'Уведомление принято':'Юридическое уведомление'}`}
-function renderAll(){
- $('#dn').textContent=`День ${dayNo()} из 31`;
- renderNav();renderPanel();renderCal();legalBtn();icons();
+if(p_tips) {
+  const tipsArray = p_tips.split('|');
+  document.getElementById('tips-list').innerHTML = tipsArray.map(t => `<li>${t}</li>`).join('');
 }
 
-/* ============ ШТОРКА, ТОСТ, СОБЫТИЯ ============ */
-const show=()=>{$('#sheet').classList.add('open');try{tg.BackButton.show()}catch(e){}};
-const hide=()=>{$('#sheet').classList.remove('open');try{tg.BackButton.hide()}catch(e){}};
-try{tg.BackButton.onClick(hide)}catch(e){}
-let tt;const toast=m=>{const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('on'),2200)};
-
-document.addEventListener('click',e=>{
- const t=e.target.closest('button,[data-x]');if(!t)return;
- const D=t.dataset;
- if('x' in D){hide();return}
- if(t.id==='sync'){boot();return}
- if(t.classList.contains('tab')){if(D.k!==tab){tab=D.k;hap();renderNav();renderPanel(true);icons()}return}
- if(t.classList.contains('task')){
-  if(D.s)S.log[today()]=(S.log[today()]||0)^(1<<bit(D.s,+D.i));
-  else S.proto[D.d]=(S.proto[D.d]||0)^(1<<+D.i);
-  persist();hap();
-  if(D.s){renderPanel();icons()}else{renderSheet();renderCal();icons()}return}
- if(t.classList.contains('day')){curDay=+D.d;mode='day';renderSheet();show();hap();return}
- if(t.id==='lgb'){mode='legal';renderSheet();show();hap();return}
- if('ack' in D){S.ack=true;persist();legalBtn();icons();hide();toast('Уведомление принято');hap('ok');return}
- if('cam' in D)$('#cam').click();
+// 3. Логика вкладок
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    
+    tab.classList.add('active');
+    document.getElementById(tab.dataset.target).classList.add('active');
+    
+    // Если открыли профиль, перерисовываем канвас
+    if(tab.dataset.target === 'view-map') drawFaceMap();
+  });
 });
-$('#cam').onchange=e=>{
- const f=e.target.files[0];if(!f)return;
- const img=new Image(),u=URL.createObjectURL(f),day=curDay;
- img.onload=async()=>{
-  const k=Math.min(1,480/Math.max(img.width,img.height)),c=document.createElement('canvas');
-  c.width=img.width*k;c.height=img.height*k;c.getContext('2d').drawImage(img,0,0,c.width,c.height);
-  P[day]=c.toDataURL('image/jpeg',.75);savePhotos();URL.revokeObjectURL(u);
-  renderSheet();renderCal();icons();hap('ok');
-  if(CONFIG.API_URL){try{await api('POST','/photo',{day,image:P[day]});toast('Фото отправлено боту')}catch(err){toast('Фото сохранено на устройстве')}}
-  else toast('Фото дня '+day+' сохранено');
- };
- img.src=u;e.target.value='';
-};
-document.addEventListener('keydown',e=>{if(e.key==='Escape')hide()});
 
-/* ============ СТАРТ ============ */
-(function(){
- const u=tg&&tg.initDataUnsafe&&tg.initDataUnsafe.user;
- if(u){
-  $('#nm').textContent=[u.first_name,u.last_name].filter(Boolean).join(' ')||'Гость';
-  $('#ini').textContent=(u.first_name||'Г')[0].toUpperCase();
-  if(u.photo_url){const im=new Image();im.alt='';im.onload=()=>{$('#av').innerHTML='';$('#av').appendChild(im)};im.src=u.photo_url}
- }
- renderMetrics(DEMO);renderAll();
- requestAnimationFrame(()=>setTimeout(()=>{$('#tp').style.width='64%'},150));
- boot();
-})();
+// 4. Логика Протокола (Задачи)
+const tasks = [
+  { id: 'water', title: 'Вода с утра', desc: 'Стакан теплой воды до еды' },
+  { id: 'mewing', title: 'Mewing', desc: 'Язык на нёбе, дыхание носом' },
+  { id: 'massage', title: 'Лимфодренаж', desc: 'Легкий массаж лица 3 мин' },
+  { id: 'posture', title: 'Осанка у стены', desc: 'Затылок, лопатки, таз - 2 мин' },
+  { id: 'sleep', title: 'Режим сна', desc: 'Сон 8 часов на спине' }
+];
+
+const todayDate = new Date().toLocaleDateString('sv');
+let progress = JSON.parse(localStorage.getItem('proto31_tasks') || '{}');
+if(!progress[todayDate]) progress[todayDate] = {};
+
+function renderTasks() {
+  const c = document.getElementById('tasks-container');
+  c.innerHTML = tasks.map(t => {
+    const isOn = progress[todayDate][t.id];
+    return `
+      <button class="task ${isOn ? 'on' : ''}" data-id="${t.id}">
+        <div class="box"><i data-lucide="check" style="width:14px"></i></div>
+        <div class="flex-1 text-left"><b>${t.title}</b><p>${t.desc}</p></div>
+      </button>
+    `;
+  }).join('');
+  lucide.createIcons();
+}
+renderTasks();
+
+document.getElementById('tasks-container').addEventListener('click', (e) => {
+  const btn = e.target.closest('.task');
+  if(!btn) return;
+  const tid = btn.dataset.id;
+  progress[todayDate][tid] = !progress[todayDate][tid];
+  localStorage.setItem('proto31_tasks', JSON.stringify(progress));
+  if(tg && tg.HapticFeedback) tg.HapticFeedback.selectionChanged();
+  renderTasks();
+});
+
+// 5. Логика Галереи и Карты Лица
+const galleryDays = [1, 7, 14, 28, 31];
+let activeDay = null;
+
+function renderGallery() {
+  const c = document.getElementById('gallery-container');
+  c.innerHTML = galleryDays.map(d => {
+    const photoData = localStorage.getItem(`proto31_gal_${d}`);
+    return `
+      <div class="gal-item ${photoData ? '' : 'empty'}" data-day="${d}">
+        ${photoData ? `<img src="${photoData}">` : ''}
+        <div class="ui">
+          <i data-lucide="${photoData ? 'refresh-cw' : 'plus'}" style="width:28px;height:28px;margin-bottom:8px"></i>
+          <span class="text-xs">${photoData ? 'Обновить' : 'Добавить'}</span>
+        </div>
+        <div class="gal-label">День ${d}</div>
+      </div>
+    `;
+  }).join('');
+  lucide.createIcons();
+}
+
+document.getElementById('gallery-container').addEventListener('click', (e) => {
+  const item = e.target.closest('.gal-item');
+  if(!item) return;
+  activeDay = item.dataset.day;
+  document.getElementById('camera-input').click();
+});
+
+document.getElementById('camera-input').addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if(!file || !activeDay) return;
+  
+  const reader = new FileReader();
+  reader.onload = (event) => {
+    const img = new Image();
+    img.onload = () => {
+      // Сжимаем фото перед сохранением, чтобы не забить localStorage
+      const canvas = document.createElement('canvas');
+      const MAX_WIDTH = 500;
+      const scaleSize = MAX_WIDTH / img.width;
+      canvas.width = MAX_WIDTH;
+      canvas.height = img.height * scaleSize;
+      
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+      localStorage.setItem(`proto31_gal_${activeDay}`, dataUrl);
+      
+      renderGallery();
+      drawFaceMap(); // Обновляем карту лица, если это День 1
+    };
+    img.src = event.target.result;
+  };
+  reader.readAsDataURL(file);
+});
+
+// 6. Отрисовка Карты Лица (Канвас + Сетка)
+function drawFaceMap() {
+  const canvas = document.getElementById('face-canvas');
+  const overlay = document.getElementById('canvas-overlay');
+  const ctx = canvas.getContext('2d');
+  
+  // Берем фото Дня 1
+  const basePhoto = localStorage.getItem('proto31_gal_1');
+  
+  if(!basePhoto) {
+    overlay.style.display = 'flex';
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    return;
+  }
+  
+  overlay.style.display = 'none';
+  const img = new Image();
+  img.onload = () => {
+    canvas.width = canvas.clientWidth;
+    canvas.height = canvas.clientHeight;
+    
+    // Рисуем фото (Cover)
+    const scale = Math.max(canvas.width / img.width, canvas.height / img.height);
+    const x = (canvas.width / 2) - (img.width / 2) * scale;
+    const y = (canvas.height / 2) - (img.height / 2) * scale;
+    ctx.drawImage(img, x, y, img.width * scale, img.height * scale);
+    
+    // Затемняем фото для стиля
+    ctx.fillStyle = 'rgba(15, 21, 18, 0.4)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    // РИСУЕМ ЗОЛОТУЮ СЕТКУ (Имитация анализа)
+    const w = canvas.width;
+    const h = canvas.height;
+    ctx.strokeStyle = 'rgba(196, 167, 107, 0.8)'; // Цвет brass
+    
+    // Центральная ось симметрии
+    ctx.setLineDash([5, 5]);
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(w/2, 0);
+    ctx.lineTo(w/2, h);
+    ctx.stroke();
+    
+    ctx.setLineDash([]);
+    // Трети лица (горизонтальные линии)
+    ctx.strokeStyle = 'rgba(196, 167, 107, 0.4)';
+    const thirds = [h*0.3, h*0.55, h*0.8];
+    thirds.forEach(ty => {
+      ctx.beginPath(); ctx.moveTo(w*0.2, ty); ctx.lineTo(w*0.8, ty); ctx.stroke();
+    });
+    
+    // Челюстные углы и скулы (точки и соединения)
+    ctx.fillStyle = '#c4a76b';
+    const points = [
+      {x: w*0.3, y: h*0.55}, // Левая скула
+      {x: w*0.7, y: h*0.55}, // Правая скула
+      {x: w*0.35, y: h*0.75}, // Левый угол челюсти
+      {x: w*0.65, y: h*0.75}, // Правый угол челюсти
+      {x: w*0.5, y: h*0.85}   // Подбородок
+    ];
+    
+    ctx.strokeStyle = 'rgba(196, 167, 107, 0.9)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(points[0].x, points[0].y);
+    ctx.lineTo(points[2].x, points[2].y);
+    ctx.lineTo(points[4].x, points[4].y);
+    ctx.lineTo(points[3].x, points[3].y);
+    ctx.lineTo(points[1].x, points[1].y);
+    ctx.stroke();
+    
+    // Рисуем точки
+    points.forEach(p => {
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, 4, 0, Math.PI*2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, 8, 0, Math.PI*2);
+      ctx.strokeStyle = 'rgba(196, 167, 107, 0.4)';
+      ctx.stroke();
+    });
+  };
+  img.src = basePhoto;
+}
+
+// Запуск
+lucide.createIcons();
+renderGallery();
+drawFaceMap();
 </script>
 </body>
 </html>

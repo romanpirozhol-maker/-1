@@ -5,9 +5,18 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="theme-color" content="#0f1512">
 <title>Протокол 31 - Личный кабинет</title>
+
+<!-- Библиотеки -->
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="https://cdn.tailwindcss.com/3.4.17"></script>
 <script src="https://cdn.jsdelivr.net/npm/lucide@0.383.0/dist/umd/lucide.min.js"></script>
+
+<!-- NЕЙРОСЕТЬ MEDIAPIPE (Face Mesh) -->
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js" crossorigin="anonymous"></script>
+
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#0f1512;--surf:#161f1b;--line:rgba(236,229,211,.11);--ink:#ece5d3;--mute:#8d978f;--brass:#c4a76b;--brass-dim:rgba(196,167,107,.2)}
@@ -54,7 +63,11 @@ canvas{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;z-
 .gal-item:not(.empty):active .ui{opacity:1}
 .gal-label{position:absolute;bottom:8px;left:8px;z-index:3;background:rgba(15,21,18,0.8);padding:2px 8px;border-radius:6px;font-size:11px;font-weight:600;color:var(--brass)}
 
-/* Protocol Checklist */
+/* Loader */
+#ai-loader{position:absolute;inset:0;background:rgba(15,21,18,0.9);z-index:10;display:none;flex-direction:column;align-items:center;justify-content:center;color:var(--brass)}
+.spinner{width:40px;height:40px;border:3px solid rgba(196,167,107,.3);border-top-color:var(--brass);border-radius:50%;animation:spin 1s linear infinite;margin-bottom:16px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
 .task{display:flex;gap:14px;padding:14px;background:var(--surf);border:1px solid var(--line);border-radius:12px;margin-bottom:8px;transition:all .2s}
 .task .box{width:22px;height:22px;border-radius:50%;border:2px solid var(--mute);display:flex;align-items:center;justify-content:center;color:transparent;flex-shrink:0}
 .task.on .box{background:var(--brass);border-color:var(--brass);color:var(--bg)}
@@ -91,26 +104,28 @@ canvas{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;z-
   <div id="view-map" class="view active">
     <div class="canvas-container">
       <canvas id="face-canvas"></canvas>
+      <div id="ai-loader">
+        <div class="spinner"></div>
+        <p class="font-semibold font-serif tracking-widest uppercase text-xs">Инициализация нейросети...</p>
+      </div>
       <div id="canvas-overlay" class="canvas-overlay">
         <i data-lucide="camera" style="width:32px;height:32px;color:var(--brass);margin-bottom:12px"></i>
         <p class="font-semibold text-sm">Нет базового фото</p>
-        <p class="text-xs mute mt-1">Перейди в Галерею и сделай фото "День 1", чтобы нейросеть построила разметку золотого сечения.</p>
+        <p class="text-xs mute mt-1">Перейди в Галерею и сделай селфи анфас "День 1", чтобы нейросеть построила разметку костей.</p>
       </div>
     </div>
 
     <div class="mx">
-      <div class="mx-card"><span id="m-jaw-label">Индекс челюсти</span><b id="m-jaw">0</b></div>
-      <div class="mx-card"><span id="m-fwhr-label">FWHR Пропорция</span><b id="m-fwhr">0</b></div>
+      <div class="mx-card"><span id="m-jaw-label">Индекс челюсти</span><b id="m-jaw">0.00</b></div>
+      <div class="mx-card"><span id="m-fwhr-label">FWHR Пропорция</span><b id="m-fwhr">0.00</b></div>
       <div class="mx-card"><span id="m-asym-label">Симметрия</span><b id="m-asym">0%</b></div>
-      <div class="mx-card"><span id="m-gold-label">Золотое сечение</span><b id="m-gold">0/10</b></div>
+      <div class="mx-card"><span id="m-gold-label">Золотое сечение</span><b id="m-gold">0.0/10</b></div>
     </div>
 
     <div class="tips-box">
       <h3>Персональный План</h3>
       <ul id="tips-list">
-        <li>Спи на спине, чтобы избежать асимметрии лица.</li>
-        <li>Практикуй Mewing: язык полностью прижат к нёбу.</li>
-        <li>Снизь соль до 3г в день, чтобы убрать утреннюю отёчность.</li>
+        <li>Добавь фото День 1 в Галерею, чтобы ИИ составил план на основе твоих костей.</li>
       </ul>
     </div>
   </div>
@@ -124,11 +139,9 @@ canvas{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;z-
   <!-- VIEW: GALLERY -->
   <div id="view-gallery" class="view">
     <h2 class="text-2xl font-bold serif text-[var(--brass)] mb-4">Контрольные Срезы</h2>
-    <p class="text-xs mute mb-4">Делай фото при одинаковом освещении и ракурсе. День 1 используется для Карты Лица.</p>
+    <p class="text-xs mute mb-4">Делай селфи анфас при ровном свете. Фото "День 1" сканируется нейросетью.</p>
     
-    <div class="gal-grid" id="gallery-container">
-      <!-- Галерея рендерится через JS -->
-    </div>
+    <div class="gal-grid" id="gallery-container"></div>
   </div>
 
 </main>
@@ -136,7 +149,9 @@ canvas{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;z-
 <input type="file" id="camera-input" accept="image/*" capture="user" hidden>
 
 <script>
-// 1. Инициализация Telegram и получение данных
+// ==========================================
+// 1. ИНИЦИАЛИЗАЦИЯ TELEGRAM
+// ==========================================
 const tg = window.Telegram && window.Telegram.WebApp;
 if(tg) {
   tg.ready();
@@ -154,77 +169,198 @@ if(tg) {
   }
 }
 
-// 2. Чтение параметров из ссылки (от бота)
-const params = new URLSearchParams(window.location.search);
-const p_jaw = params.get('jaw') || '87';
-const p_fwhr = params.get('fwhr') || '1.94';
-const p_asym = params.get('asym') || '92.5';
-const p_gold = params.get('gold') || '8.6';
-const p_tips = params.get('tips');
-
-document.getElementById('m-jaw').innerText = p_jaw;
-document.getElementById('m-fwhr').innerText = p_fwhr;
-document.getElementById('m-asym').innerText = p_asym + '%';
-document.getElementById('m-gold').innerText = p_gold + '/10';
-
-if(p_tips) {
-  const tipsArray = p_tips.split('|');
-  document.getElementById('tips-list').innerHTML = tipsArray.map(t => `<li>${t}</li>`).join('');
-}
-
-// 3. Логика вкладок
+// ==========================================
+// 2. ЛОГИКА ВКЛАДОК
+// ==========================================
 document.querySelectorAll('.tab').forEach(tab => {
   tab.addEventListener('click', () => {
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
     document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-    
     tab.classList.add('active');
     document.getElementById(tab.dataset.target).classList.add('active');
     
-    // Если открыли профиль, перерисовываем канвас
-    if(tab.dataset.target === 'view-map') drawFaceMap();
+    // Если перешли на Карту лица, запускаем сканер
+    if(tab.dataset.target === 'view-map') checkAndRunScanner();
   });
 });
 
-// 4. Логика Протокола (Задачи)
-const tasks = [
-  { id: 'water', title: 'Вода с утра', desc: 'Стакан теплой воды до еды' },
-  { id: 'mewing', title: 'Mewing', desc: 'Язык на нёбе, дыхание носом' },
-  { id: 'massage', title: 'Лимфодренаж', desc: 'Легкий массаж лица 3 мин' },
-  { id: 'posture', title: 'Осанка у стены', desc: 'Затылок, лопатки, таз - 2 мин' },
-  { id: 'sleep', title: 'Режим сна', desc: 'Сон 8 часов на спине' }
-];
+// ==========================================
+// 3. MEDIAPIPE FACE MESH (НЕЙРОСЕТЬ В БРАУЗЕРЕ)
+// ==========================================
+let faceMeshInstance = null;
+let isAiLoading = false;
 
-const todayDate = new Date().toLocaleDateString('sv');
-let progress = JSON.parse(localStorage.getItem('proto31_tasks') || '{}');
-if(!progress[todayDate]) progress[todayDate] = {};
-
-function renderTasks() {
-  const c = document.getElementById('tasks-container');
-  c.innerHTML = tasks.map(t => {
-    const isOn = progress[todayDate][t.id];
-    return `
-      <button class="task ${isOn ? 'on' : ''}" data-id="${t.id}">
-        <div class="box"><i data-lucide="check" style="width:14px"></i></div>
-        <div class="flex-1 text-left"><b>${t.title}</b><p>${t.desc}</p></div>
-      </button>
-    `;
-  }).join('');
-  lucide.createIcons();
+function initMediaPipe() {
+  if (faceMeshInstance) return faceMeshInstance;
+  
+  faceMeshInstance = new FaceMesh({locateFile: (file) => {
+    return `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`;
+  }});
+  
+  faceMeshInstance.setOptions({
+    maxNumFaces: 1,
+    refineLandmarks: true,
+    minDetectionConfidence: 0.5,
+    minTrackingConfidence: 0.5
+  });
+  
+  faceMeshInstance.onResults(onResultsMediaPipe);
+  return faceMeshInstance;
 }
-renderTasks();
 
-document.getElementById('tasks-container').addEventListener('click', (e) => {
-  const btn = e.target.closest('.task');
-  if(!btn) return;
-  const tid = btn.dataset.id;
-  progress[todayDate][tid] = !progress[todayDate][tid];
-  localStorage.setItem('proto31_tasks', JSON.stringify(progress));
-  if(tg && tg.HapticFeedback) tg.HapticFeedback.selectionChanged();
-  renderTasks();
-});
+// Вспомогательная математика расстояний
+function getDistance(lm1, lm2, w, h) {
+  const dx = (lm1.x - lm2.x) * w;
+  const dy = (lm1.y - lm2.y) * h;
+  return Math.sqrt(dx*dx + dy*dy);
+}
 
-// 5. Логика Галереи и Карты Лица
+// Обработка результатов (Рисуем сетку и считаем)
+function onResultsMediaPipe(results) {
+  const canvas = document.getElementById('face-canvas');
+  const ctx = canvas.getContext('2d');
+  document.getElementById('ai-loader').style.display = 'none';
+  isAiLoading = false;
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  
+  if (results.image) {
+    // Рисуем само фото юзера
+    ctx.drawImage(results.image, 0, 0, canvas.width, canvas.height);
+    // Темная маска
+    ctx.fillStyle = 'rgba(15, 21, 18, 0.4)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+  }
+
+  if (results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0) {
+    const lm = results.multiFaceLandmarks[0];
+    const w = canvas.width;
+    const h = canvas.height;
+
+    // --- МАТЕМАТИКА КОСТЕЙ (Точные точки MediaPipe) ---
+    const face_width = getDistance(lm[234], lm[454], w, h); // Ширина от скулы до скулы
+    const jaw_width = getDistance(lm[132], lm[361], w, h);  // Ширина углов челюсти
+    const midface_height = getDistance(lm[168], lm[0], w, h); // От переносицы до губы
+    
+    // Индексы
+    const jaw_ratio = face_width > 0 ? (jaw_width / face_width) : 0.85;
+    const fwhr = midface_height > 0 ? (face_width / midface_height) : 1.8;
+    
+    // Асимметрия (простая: разница высоты глаз)
+    const eyeL = lm[33];
+    const eyeR = lm[263];
+    const heightDiff = Math.abs((eyeL.y - eyeR.y) * h);
+    let symPercent = 100 - (heightDiff * 1.5);
+    if(symPercent > 100) symPercent = 100;
+    if(symPercent < 0) symPercent = 0;
+
+    // Золотое сечение (условное)
+    let golden_score = 9.5 - Math.abs(1.85 - fwhr) * 2 - Math.abs(0.92 - jaw_ratio) * 10;
+    golden_score = Math.max(1.5, Math.min(9.5, golden_score));
+
+    // Обновляем UI
+    document.getElementById('m-jaw').innerText = jaw_ratio.toFixed(2);
+    document.getElementById('m-fwhr').innerText = fwhr.toFixed(2);
+    document.getElementById('m-asym').innerText = symPercent.toFixed(0) + '%';
+    document.getElementById('m-gold').innerText = golden_score.toFixed(1) + '/10';
+
+    generateSmartTips(jaw_ratio, fwhr, symPercent);
+
+    // --- ОТРИСОВКА КАРКАСА И 478 ТОЧЕК ---
+    ctx.lineWidth = 1;
+    
+    // Соединяем точки костей челюсти
+    ctx.strokeStyle = 'rgba(196, 167, 107, 0.9)'; // Цвет brass
+    ctx.beginPath();
+    ctx.moveTo(lm[234].x * w, lm[234].y * h); // Левая скула
+    ctx.lineTo(lm[132].x * w, lm[132].y * h); // Левая челюсть
+    ctx.lineTo(lm[152].x * w, lm[152].y * h); // Подбородок
+    ctx.lineTo(lm[361].x * w, lm[361].y * h); // Правая челюсть
+    ctx.lineTo(lm[454].x * w, lm[454].y * h); // Правая скула
+    ctx.stroke();
+
+    // Рисуем все коннекты (Face Mesh сетка)
+    drawConnectors(ctx, lm, FACEMESH_TESSELATION, {color: 'rgba(196, 167, 107, 0.1)', lineWidth: 0.5});
+    drawConnectors(ctx, lm, FACEMESH_RIGHT_EYE, {color: 'rgba(196, 167, 107, 0.5)'});
+    drawConnectors(ctx, lm, FACEMESH_LEFT_EYE, {color: 'rgba(196, 167, 107, 0.5)'});
+    drawConnectors(ctx, lm, FACEMESH_FACE_OVAL, {color: 'rgba(196, 167, 107, 0.6)'});
+
+    // Опорные точки костей
+    const keyPoints = [234, 454, 132, 361, 152, 168, 0];
+    ctx.fillStyle = '#c4a76b';
+    keyPoints.forEach(idx => {
+      ctx.beginPath();
+      ctx.arc(lm[idx].x * w, lm[idx].y * h, 3, 0, 2*Math.PI);
+      ctx.fill();
+    });
+
+  } else {
+    document.getElementById('tips-list').innerHTML = `<li>Лицо не обнаружено. Убедись, что на фото День 1 четко видно лицо анфас.</li>`;
+  }
+}
+
+// Запуск сканера
+async function checkAndRunScanner() {
+  const basePhoto = localStorage.getItem('proto31_gal_1');
+  const overlay = document.getElementById('canvas-overlay');
+  const loader = document.getElementById('ai-loader');
+  
+  if(!basePhoto) {
+    overlay.style.display = 'flex';
+    return;
+  }
+  
+  overlay.style.display = 'none';
+  if(isAiLoading) return;
+  
+  loader.style.display = 'flex';
+  isAiLoading = true;
+
+  const fm = initMediaPipe();
+  
+  const img = new Image();
+  img.onload = async () => {
+    // Настраиваем канвас под размер фотки
+    const canvas = document.getElementById('face-canvas');
+    canvas.width = img.width;
+    canvas.height = img.height;
+    
+    // Запускаем анализ нейросетью
+    await fm.send({image: img});
+  };
+  img.src = basePhoto;
+}
+
+// Генератор уникальных рекомендаций
+function generateSmartTips(jaw, fwhr, asym) {
+  const tips = [];
+  
+  if (jaw < 0.86) {
+    tips.push("Твой индекс челюсти ниже нормы костного каркаса. Практикуй хард-мьюинг для выдвижения максиллы вперед.");
+    tips.push("Жуй жесткую пищу или эспандеры для развития жевательных мышц (массетеров) и расширения нижней трети.");
+  } else {
+    tips.push("У тебя отличный, широкий костный каркас челюсти. Поддерживай тонус мышц и следи за процентом жира на лице.");
+  }
+
+  if (fwhr < 1.75) {
+    tips.push("У тебя вытянутое лицо (низкий FWHR). Избегай стрижек с объемом сверху, выбирай текстурированные челки для визуального баланса третей.");
+  } else {
+    tips.push("У тебя компактное, 'боевое' лицо (высокий FWHR). Тебе пойдут короткие стрижки и укладки с объемом наверх.");
+  }
+
+  if (asym < 90) {
+    tips.push(`Симметрия ${asym.toFixed(0)}%. Спи исключительно на спине. Жуй пищу равномерно на обеих сторонах челюсти.`);
+  }
+
+  tips.push("Контролируй натрий (соль) до 3г в день, чтобы сливать воду из-под кожи и обнажить углы челюсти.");
+  
+  document.getElementById('tips-list').innerHTML = tips.map(t => `<li>${t}</li>`).join('');
+}
+
+
+// ==========================================
+// 4. ГАЛЕРЕЯ И СОХРАНЕНИЕ
+// ==========================================
 const galleryDays = [1, 7, 14, 28, 31];
 let activeDay = null;
 
@@ -261,9 +397,9 @@ document.getElementById('camera-input').addEventListener('change', (e) => {
   reader.onload = (event) => {
     const img = new Image();
     img.onload = () => {
-      // Сжимаем фото перед сохранением, чтобы не забить localStorage
+      // Сжимаем фото перед сохранением в память
       const canvas = document.createElement('canvas');
-      const MAX_WIDTH = 500;
+      const MAX_WIDTH = 600;
       const scaleSize = MAX_WIDTH / img.width;
       canvas.width = MAX_WIDTH;
       canvas.height = img.height * scaleSize;
@@ -271,107 +407,62 @@ document.getElementById('camera-input').addEventListener('change', (e) => {
       const ctx = canvas.getContext('2d');
       ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
       
-      const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
       localStorage.setItem(`proto31_gal_${activeDay}`, dataUrl);
       
       renderGallery();
-      drawFaceMap(); // Обновляем карту лица, если это День 1
+      if(activeDay == 1) checkAndRunScanner(); // Обновляем сетку, если это базовое фото
     };
     img.src = event.target.result;
   };
   reader.readAsDataURL(file);
 });
 
-// 6. Отрисовка Карты Лица (Канвас + Сетка)
-function drawFaceMap() {
-  const canvas = document.getElementById('face-canvas');
-  const overlay = document.getElementById('canvas-overlay');
-  const ctx = canvas.getContext('2d');
-  
-  // Берем фото Дня 1
-  const basePhoto = localStorage.getItem('proto31_gal_1');
-  
-  if(!basePhoto) {
-    overlay.style.display = 'flex';
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-    return;
-  }
-  
-  overlay.style.display = 'none';
-  const img = new Image();
-  img.onload = () => {
-    canvas.width = canvas.clientWidth;
-    canvas.height = canvas.clientHeight;
-    
-    // Рисуем фото (Cover)
-    const scale = Math.max(canvas.width / img.width, canvas.height / img.height);
-    const x = (canvas.width / 2) - (img.width / 2) * scale;
-    const y = (canvas.height / 2) - (img.height / 2) * scale;
-    ctx.drawImage(img, x, y, img.width * scale, img.height * scale);
-    
-    // Затемняем фото для стиля
-    ctx.fillStyle = 'rgba(15, 21, 18, 0.4)';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    
-    // РИСУЕМ ЗОЛОТУЮ СЕТКУ (Имитация анализа)
-    const w = canvas.width;
-    const h = canvas.height;
-    ctx.strokeStyle = 'rgba(196, 167, 107, 0.8)'; // Цвет brass
-    
-    // Центральная ось симметрии
-    ctx.setLineDash([5, 5]);
-    ctx.lineWidth = 1.5;
-    ctx.beginPath();
-    ctx.moveTo(w/2, 0);
-    ctx.lineTo(w/2, h);
-    ctx.stroke();
-    
-    ctx.setLineDash([]);
-    // Трети лица (горизонтальные линии)
-    ctx.strokeStyle = 'rgba(196, 167, 107, 0.4)';
-    const thirds = [h*0.3, h*0.55, h*0.8];
-    thirds.forEach(ty => {
-      ctx.beginPath(); ctx.moveTo(w*0.2, ty); ctx.lineTo(w*0.8, ty); ctx.stroke();
-    });
-    
-    // Челюстные углы и скулы (точки и соединения)
-    ctx.fillStyle = '#c4a76b';
-    const points = [
-      {x: w*0.3, y: h*0.55}, // Левая скула
-      {x: w*0.7, y: h*0.55}, // Правая скула
-      {x: w*0.35, y: h*0.75}, // Левый угол челюсти
-      {x: w*0.65, y: h*0.75}, // Правый угол челюсти
-      {x: w*0.5, y: h*0.85}   // Подбородок
-    ];
-    
-    ctx.strokeStyle = 'rgba(196, 167, 107, 0.9)';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(points[0].x, points[0].y);
-    ctx.lineTo(points[2].x, points[2].y);
-    ctx.lineTo(points[4].x, points[4].y);
-    ctx.lineTo(points[3].x, points[3].y);
-    ctx.lineTo(points[1].x, points[1].y);
-    ctx.stroke();
-    
-    // Рисуем точки
-    points.forEach(p => {
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, 4, 0, Math.PI*2);
-      ctx.fill();
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, 8, 0, Math.PI*2);
-      ctx.strokeStyle = 'rgba(196, 167, 107, 0.4)';
-      ctx.stroke();
-    });
-  };
-  img.src = basePhoto;
+
+// ==========================================
+// 5. ПРОТОКОЛ / ЗАДАЧИ
+// ==========================================
+const tasks = [
+  { id: 'water', title: 'Водный баланс', desc: 'Стакан теплой воды до еды' },
+  { id: 'mewing', title: 'Mewing', desc: 'Язык прижат к нёбу, дыхание носом' },
+  { id: 'massage', title: 'Лимфодренаж', desc: 'Массаж лица 3 мин (гуаша/руки)' },
+  { id: 'posture', title: 'Осанка у стены', desc: 'Затылок, лопатки, таз - 2 мин' },
+  { id: 'sleep', title: 'Режим костей', desc: 'Сон 8 часов строго на спине' }
+];
+
+const todayDate = new Date().toLocaleDateString('sv');
+let progress = JSON.parse(localStorage.getItem('proto31_tasks') || '{}');
+if(!progress[todayDate]) progress[todayDate] = {};
+
+function renderTasks() {
+  const c = document.getElementById('tasks-container');
+  c.innerHTML = tasks.map(t => {
+    const isOn = progress[todayDate][t.id];
+    return `
+      <button class="task ${isOn ? 'on' : ''}" data-id="${t.id}">
+        <div class="box"><i data-lucide="check" style="width:14px"></i></div>
+        <div class="flex-1 text-left"><b>${t.title}</b><p>${t.desc}</p></div>
+      </button>
+    `;
+  }).join('');
+  lucide.createIcons();
 }
 
-// Запуск
+document.getElementById('tasks-container').addEventListener('click', (e) => {
+  const btn = e.target.closest('.task');
+  if(!btn) return;
+  const tid = btn.dataset.id;
+  progress[todayDate][tid] = !progress[todayDate][tid];
+  localStorage.setItem('proto31_tasks', JSON.stringify(progress));
+  if(tg && tg.HapticFeedback) tg.HapticFeedback.selectionChanged();
+  renderTasks();
+});
+
+// Инициализация интерфейса
 lucide.createIcons();
 renderGallery();
-drawFaceMap();
+renderTasks();
+checkAndRunScanner();
 </script>
 </body>
 </html>

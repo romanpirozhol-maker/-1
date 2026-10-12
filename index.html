@@ -2,467 +2,580 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
-<meta name="theme-color" content="#0f1512">
-<title>Протокол 31 - Личный кабинет</title>
-
-<!-- Библиотеки -->
+<meta name="theme-color" content="#0d0e11">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<title>FaceTheory</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
-<script src="https://cdn.tailwindcss.com/3.4.17"></script>
-<script src="https://cdn.jsdelivr.net/npm/lucide@0.383.0/dist/umd/lucide.min.js"></script>
-
-<!-- NЕЙРОСЕТЬ MEDIAPIPE (Face Mesh) -->
-<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js" crossorigin="anonymous"></script>
-
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Inter:wght@500;600;700;800&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#0f1512;--surf:#161f1b;--line:rgba(236,229,211,.11);--ink:#ece5d3;--mute:#8d978f;--brass:#c4a76b;--brass-dim:rgba(196,167,107,.2)}
-*{-webkit-tap-highlight-color:transparent;box-sizing:border-box}
-html,body{background:var(--bg);margin:0;color:var(--ink);font:400 14.5px/1.5 Manrope,sans-serif;overscroll-behavior:none}
-button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;text-align:left}
-.serif,h1,h2,h3{font-family:'Cormorant Garamond',serif;font-variant-numeric:lining-nums;margin:0}
-.mute{color:var(--mute)}
+:root{--bg:#0d0e11;--card:#1a1b20;--card2:#212329;--ln:#2c2e36;--ink:#f3eee4;--mut:#8d909a;--gold:#c5a880;--gold2:#d4af37;--ok:#2e8f6a;--warn:#c9884a;--soft:#a3a6b0;--sh:0 1px 0 rgba(255,255,255,.03) inset,0 10px 30px rgba(0,0,0,.45);--sb:env(safe-area-inset-bottom,0px)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;overflow:hidden;background:var(--bg);color:var(--ink);font:500 15px/1.35 Inter,-apple-system,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer;text-align:left}
+h1,h2,h3,p{margin:0}
+svg.lucide{width:20px;height:20px;stroke-width:2;flex:none}
+#app{position:fixed;left:0;right:0;top:0;height:var(--app-h,100%);max-width:520px;margin:0 auto;overflow:hidden}
+.scr{position:absolute;inset:0;display:none;flex-direction:column;background:var(--bg)}
+.scr.on{display:flex;animation:fi .25s ease}
+@keyframes fi{from{opacity:0;transform:translateX(14px)}}
+.scroll{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding:14px}
+.top{display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--card);border-bottom:1px solid var(--ln);font-weight:700;font-size:17px}
+.ib{width:34px;height:34px;border-radius:50%;border:1px solid var(--ln);display:grid;place-items:center;background:var(--card2);color:var(--gold);flex:none}
+.card{background:var(--card);border:1px solid var(--ln);border-radius:18px;box-shadow:var(--sh)}
+.btn{height:50px;border-radius:14px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:8px;border:1px solid var(--ln);background:var(--card2);color:var(--ink);padding:0 16px;text-align:center;transition:transform .12s}
+.btn:active{transform:scale(.97)}
+.btn.k{background:linear-gradient(135deg,#d9c19a,#c5a880 55%,#b39366);color:#17130b;border-color:#c5a880}
+.btn.g{background:var(--ok);border-color:var(--ok);color:#fff}
+.btn[disabled]{opacity:.38;pointer-events:none}
+.bar{display:flex;gap:10px;padding:12px 14px calc(12px + var(--sb));background:var(--card);border-top:1px solid var(--ln)}
+.bar .btn{flex:1}
+.mut{color:var(--mut)}.bl{filter:blur(5px)}
+.hid{position:absolute;left:-9999px;width:1px;height:1px;opacity:0}
 
-/* Header & Avatar */
-.ava{width:50px;height:50px;border-radius:50%;display:grid;place-items:center;overflow:hidden;background:var(--brass-dim);box-shadow:0 0 0 1px rgba(196,167,107,.55);color:var(--brass);font:600 22px 'Cormorant Garamond',serif;flex-shrink:0}
-.ava img{width:100%;height:100%;object-fit:cover}
-.badge{display:inline-block;margin-top:2px;padding:2px 10px;border-radius:99px;border:1px solid rgba(196,167,107,.55);color:var(--brass);font-size:10px;font-weight:700;letter-spacing:.08em}
+/* home */
+.logo{display:flex;align-items:center;gap:12px;padding:16px 16px 12px;background:linear-gradient(var(--bg) 60%,transparent)}
+.lg{width:46px;height:46px;flex:none}
+.logo b{display:block;font:700 30px/1 'Cormorant Garamond',Georgia,serif;letter-spacing:.02em;color:var(--ink)}
+.logo small{display:block;margin-top:4px;font-size:9.5px;font-weight:700;letter-spacing:.34em;color:var(--gold)}
+.hero{height:210px;border-radius:18px 18px 0 0;overflow:hidden;background:#14151a;display:grid;place-items:center;color:var(--mut)}
+.hero img{width:100%;height:100%;object-fit:cover}.hero div{display:grid;gap:6px;justify-items:center;font-size:13px}
+.last{padding:14px 16px;border-radius:0 0 18px 18px}
+.last small{font-size:10.5px;font-weight:800;letter-spacing:.12em;color:var(--gold)}
+.last .r{display:flex;justify-content:space-between;align-items:flex-end;margin-top:8px;font-size:13px;color:#b5b8c0}
+.last em{font-style:normal;font-size:10.5px;font-weight:700;color:var(--mut);text-align:right;text-transform:uppercase;max-width:84px}
+.row{display:flex;align-items:center;gap:12px;padding:14px;margin-top:10px;font-weight:600}
+.row .ic{width:36px;height:36px;border-radius:12px;background:var(--card2);color:var(--gold);display:grid;place-items:center;flex:none}
+.row .ch{margin-left:auto;color:var(--mut)}
+.two{display:flex;gap:10px;margin-top:10px}.two .btn{flex:1;justify-content:flex-start;height:54px}
+.src{margin-top:12px;flex:none}.src .btn{justify-content:center;height:46px}.src .btn svg{color:var(--gold)}
+.hist{margin-top:10px;padding:6px 0}
+.hist h3{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;font-size:20px;font-weight:800}
+.pill{padding:6px 14px;border-radius:99px;background:var(--card2);border:1px solid var(--ln);color:var(--gold);font-size:13px;font-weight:700}
+.hi{display:flex;align-items:center;gap:12px;padding:10px 16px;border-top:1px solid var(--ln)}
+.hi img,.hi .th{width:44px;height:44px;border-radius:12px;object-fit:cover;background:#2a2c33;flex:none}
+.hi b{display:block;font-size:15px}.hi small{font-size:12px;color:var(--mut)}.hi .sp{margin-left:auto;display:flex;gap:10px;color:var(--mut);align-items:center}
+.foot{display:flex;justify-content:center;gap:16px;padding:18px;color:var(--mut);font-size:13px}
 
-/* Tabs */
-.tabs{display:flex;background:var(--surf);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:20;padding:0 10px}
-.tab{flex:1;text-align:center;padding:14px 0;font-size:13px;font-weight:600;color:var(--mute);border-bottom:2px solid transparent;transition:all .2s;display:flex;flex-direction:column;align-items:center;gap:4px}
-.tab svg{width:20px;height:20px}
-.tab.active{color:var(--brass);border-bottom-color:var(--brass)}
+/* gender */
+.hb{background:linear-gradient(145deg,#25272e,#1a1b20);border:1px solid rgba(197,168,128,.38);border-radius:20px;padding:20px}
+.hb small{font-size:10.5px;font-weight:800;letter-spacing:.14em;color:var(--gold)}.hb h1{font-size:30px;font-weight:800;margin:6px 0 8px}.hb p{color:var(--soft);font-size:14px}
+.gc{display:flex;align-items:center;gap:14px;width:100%;padding:16px;margin-top:12px;border:1.5px solid var(--ln);transition:all .18s}
+.gc .ic{width:48px;height:48px;border-radius:50%;background:var(--card2);color:var(--gold);display:grid;place-items:center;flex:none}
+.gc b{display:block;font-size:17px;font-weight:800}.gc small{color:var(--soft);font-size:13px;line-height:1.3;display:block}
+.gc.sel{border-color:var(--gold);background:var(--card2);transform:scale(.985)}
+.note{margin-top:12px;padding:14px;border-radius:16px;background:var(--card);border:1px solid var(--ln);font-size:13px;color:var(--soft)}
 
-/* Face Map Canvas */
-.canvas-container{position:relative;width:100%;aspect-ratio:3/4;border-radius:16px;overflow:hidden;background:#050706;border:1px solid var(--line);margin-bottom:20px;display:flex;align-items:center;justify-content:center}
-canvas{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;z-index:1}
-.canvas-overlay{position:absolute;inset:0;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(15,21,18,0.8);text-align:center;padding:20px}
+/* upload */
+.up{display:grid;place-items:center;text-align:center;flex:1;min-height:260px;margin-top:14px;border:2px dashed #3b3e49;border-radius:20px;background:var(--card);overflow:hidden;position:relative;color:var(--mut);font-size:13px}
+.up input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;z-index:2;font-size:0}
+.up div{display:grid;gap:6px;justify-items:center}
+#s-upload .scroll{display:flex;flex-direction:column}
+.cen{text-align:center}.cen h2{font-size:22px;font-weight:800;margin-top:8px}.cen p{color:var(--soft);font-size:14px;margin-top:6px}
+.cen a{color:var(--gold);font-weight:700;text-decoration:underline}
 
-/* Metrics Grid */
-.mx{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:24px}
-.mx-card{background:var(--surf);border:1px solid var(--line);border-radius:12px;padding:12px}
-.mx-card b{display:block;font:600 28px/1 'Cormorant Garamond',serif;color:var(--brass)}
-.mx-card span{font-size:11px;color:var(--mute);text-transform:uppercase;letter-spacing:0.05em}
+/* loader */
+#s-loader{align-items:center;justify-content:center;text-align:center;gap:6px}
+.spin{width:54px;height:54px;border-radius:50%;border:3px solid var(--ln);border-top-color:var(--gold);animation:sp .9s linear infinite;margin-bottom:14px}
+@keyframes sp{to{transform:rotate(360deg)}}
+#s-loader p{color:#b5b8c0}#s-loader small{color:var(--mut)}
 
-/* Tips */
-.tips-box{background:rgba(196,167,107,.05);border-left:2px solid var(--brass);padding:16px;border-radius:0 12px 12px 0;margin-bottom:20px}
-.tips-box h3{font-size:18px;color:var(--brass);margin-bottom:8px}
-.tips-box ul{margin:0;padding-left:18px;font-size:13px;color:#c9c3b3}
-.tips-box li{margin-bottom:6px}
+/* editor */
+.eh{padding:10px 14px 0;background:var(--card)}
+.eh .m{display:flex;justify-content:space-between;font-size:12px;font-weight:600;color:#b5b8c0}
+.pb{height:3px;background:var(--ln);margin:4px 0 8px;border-radius:3px}.pb i{display:block;height:100%;width:0;background:var(--gold);transition:width .3s}
+.et{display:flex;align-items:flex-start;gap:10px}.et h2{flex:1;font-size:24px;font-weight:800;line-height:1.12}
+.et .ib.go{background:var(--ok);border-color:var(--ok);color:#fff;width:38px;height:38px}
+.eh small{display:block;font-size:12px;font-style:italic;color:var(--mut);margin:4px 0 6px}
+.tb{display:flex}.tb button{flex:1;text-align:center;padding:10px 0;font-weight:700;color:var(--mut);border-bottom:2px solid transparent}.tb .on{color:var(--ink);border-color:var(--gold)}
+.eb{flex:1;min-height:0;display:flex;flex-direction:column;gap:8px;padding:8px 12px calc(12px + var(--sb))}
+.ref{flex:none;height:clamp(96px,19%,150px);border-radius:20px;overflow:hidden;background:var(--card2);border:1px solid var(--ln)}
+.ref svg{width:100%;height:100%;display:block}
+.ref.tip{padding:14px;font-size:14px;color:#b5b8c0;overflow:auto}
+.work{position:relative;flex:1;min-height:200px;border-radius:22px;overflow:hidden;background:#000;border:1px solid var(--ln);touch-action:none;user-select:none;-webkit-user-select:none;cursor:grab}
+.wrap{position:absolute;left:0;top:0;transform-origin:0 0;will-change:transform}
+.wrap img{display:block;width:100%;height:100%;pointer-events:none;-webkit-user-drag:none}
+.dt{position:absolute;width:9px;height:9px;border-radius:50%;background:var(--gold2);border:1.5px solid #fff;transform:translate(-50%,-50%) scale(var(--iz,1))}
+.cross{position:absolute;left:50%;top:50%;width:46px;height:46px;transform:translate(-50%,-50%);pointer-events:none}
+.cross::before,.cross::after{content:"";position:absolute;background:rgba(255,255,255,.92);box-shadow:0 0 2px rgba(0,0,0,.7)}
+.cross::before{left:0;right:0;top:calc(50% - .5px);height:1px;-webkit-mask:linear-gradient(90deg,#000 34%,transparent 34% 66%,#000 66%);mask:linear-gradient(90deg,#000 34%,transparent 34% 66%,#000 66%)}
+.cross::after{top:0;bottom:0;left:calc(50% - .5px);width:1px;-webkit-mask:linear-gradient(#000 34%,transparent 34% 66%,#000 66%);mask:linear-gradient(#000 34%,transparent 34% 66%,#000 66%)}
+.cross i{position:absolute;left:calc(50% - 3px);top:calc(50% - 3px);width:6px;height:6px;border-radius:50%;border:1px solid var(--gold2);box-shadow:0 0 2px #000}
+.hint{position:absolute;top:10px;left:50%;transform:translateX(-50%);padding:5px 12px;border-radius:99px;background:rgba(13,14,17,.78);color:var(--ink);font-size:12px;font-weight:600;display:flex;gap:6px;align-items:center;pointer-events:none;transition:opacity .4s}
+.hint svg{width:13px!important;height:13px!important}
+.fb{position:absolute;width:40px;height:40px;border-radius:50%;background:rgba(26,27,32,.9);color:var(--gold);border:1px solid rgba(197,168,128,.4);display:grid;place-items:center;top:50%;margin-top:-20px;box-shadow:0 2px 8px rgba(0,0,0,.5);font-size:9px;font-weight:800;text-align:center;line-height:1}
+.fb.l{left:12px}.fb.r{right:12px}
+.nv{position:absolute;bottom:12px;height:40px;padding:0 18px;border-radius:12px;background:var(--gold);color:#17130b;font-weight:800;font-size:13px;letter-spacing:.04em;display:grid;place-items:center;box-shadow:0 2px 8px rgba(0,0,0,.5)}
+.nv.l{left:12px;background:rgba(26,27,32,.78);color:var(--ink);border:1px solid rgba(255,255,255,.14)}.nv.r{right:12px}
 
-/* Gallery */
-.gal-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.gal-item{background:var(--surf);border:1px solid var(--line);border-radius:12px;overflow:hidden;aspect-ratio:3/4;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center}
-.gal-item img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1}
-.gal-item .ui{position:absolute;inset:0;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(0,0,0,0.5);color:var(--ink);transition:opacity .2s}
-.gal-item:not(.empty) .ui{opacity:0}
-.gal-item:not(.empty):active .ui{opacity:1}
-.gal-label{position:absolute;bottom:8px;left:8px;z-index:3;background:rgba(15,21,18,0.8);padding:2px 8px;border-radius:6px;font-size:11px;font-weight:600;color:var(--brass)}
+/* sheet */
+.sh{position:absolute;inset:0;z-index:30;display:none;align-items:flex-end;background:rgba(0,0,0,.6)}
+.sh.on{display:flex;animation:bk .25s}
+@keyframes bk{from{background:transparent}}
+.sp{width:100%;max-height:94%;display:flex;flex-direction:column;background:var(--card);border:1px solid var(--ln);border-bottom:0;border-radius:22px 22px 0 0;animation:up .32s cubic-bezier(.2,.9,.25,1)}
+@keyframes up{from{transform:translateY(60%)}}
+.sp h3{display:flex;justify-content:space-between;align-items:center;padding:16px 16px 10px;font-size:17px;font-weight:800}
+.sp h3 span{font-size:12px;color:var(--gold);background:var(--card2);padding:4px 10px;border-radius:99px;font-weight:600}
+.sp .bar{flex:none}
+.cw{flex:1;min-height:0;display:grid;place-items:center;background:#000;overflow:hidden}
+.cw div{position:relative;display:inline-block;line-height:0}
+.cw img{max-width:100%;max-height:calc(var(--app-h,600px)*.5);display:block}
+.cw .dt{transform:translate(-50%,-50%)}
+.pal{position:absolute;inset:0;background:rgba(13,14,17,.72);color:var(--ink);place-items:center;font-weight:700;z-index:3}
+#s-profile .bar .btn{font-size:13px;padding:0 8px;line-height:1.15}
+.gi{display:flex;gap:10px;margin:6px 0 12px}.gi>div{flex:1;border-radius:14px;background:var(--card2);padding:8px;text-align:center;font-size:12px;font-weight:700}.gi svg{width:100%;height:96px;display:block}.gi .ok{color:#4cb58c}.gi .no{color:#d8736b}
 
-/* Loader */
-#ai-loader{position:absolute;inset:0;background:rgba(15,21,18,0.9);z-index:10;display:none;flex-direction:column;align-items:center;justify-content:center;color:var(--brass)}
-.spinner{width:40px;height:40px;border:3px solid rgba(196,167,107,.3);border-top-color:var(--brass);border-radius:50%;animation:spin 1s linear infinite;margin-bottom:16px}
-@keyframes spin{to{transform:rotate(360deg)}}
+/* results */
+.rh{background:var(--card);border-bottom:1px solid var(--ln)}
+.rt{display:flex;align-items:center;gap:10px;padding:10px 14px}
+.rt .lg{width:30px;height:30px}
+.rt .mn{font-size:13px;font-weight:700;color:var(--gold)}
+.rt h2{font-size:19px;font-weight:800}.rt .tot{margin-left:auto;font-size:19px;font-weight:800;color:var(--gold)}.rt .tot small{font-size:12px;color:var(--mut)}
+.tabs{display:flex;gap:20px;overflow-x:auto;padding:0 14px;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tabs button{flex:none;padding:8px 0 10px;font-weight:700;color:var(--mut);font-size:14px;border-bottom:2px solid transparent}.tabs .on{color:var(--ink);border-color:var(--gold)}
+.pc{position:relative;border-radius:22px;overflow:hidden;aspect-ratio:3/4;background:#14151a;border:1px solid var(--ln)}
+.pc img{width:100%;height:100%;object-fit:cover}
+.pc div{position:absolute;left:0;right:0;bottom:0;padding:48px 16px 14px;color:var(--ink);background:linear-gradient(transparent,rgba(0,0,0,.72));display:flex;justify-content:space-between;align-items:flex-end}
+.pc b{display:block;font-size:17px}.pc small{opacity:.8;font-size:12px}.pc strong{font-size:30px;font-weight:800;color:var(--gold)}.pc strong small{font-size:14px;color:var(--ink)}
+.cap{text-align:center;color:var(--mut);font-size:12px;margin:8px 0 14px}
+.sr{display:flex;align-items:center;gap:10px;padding:10px 14px;margin-bottom:12px}
+.sr img{width:36px;height:36px;border-radius:10px;object-fit:cover}.sr b{font-size:12px;letter-spacing:.08em}.sr strong{margin-left:auto;font-size:20px;color:var(--gold)}.sr small{font-size:12px;color:var(--mut)}
+.sec{font-size:19px;font-weight:800;margin:6px 2px 10px}
+.mr{padding:12px 14px;border-top:1px solid var(--ln)}.mr:first-child{border:0}
+.mh{display:flex;align-items:center;gap:8px;font-weight:600;font-size:14.5px}
+.mh u{text-decoration:none;font-size:10.5px;font-weight:700;color:var(--gold);background:rgba(197,168,128,.13);padding:2px 8px;border-radius:99px}
+.mh .sc{margin-left:auto;font-size:18px;font-weight:700}.mh svg{width:16px;height:16px;color:#7b7e89}
+.tr{position:relative;height:6px;border-radius:6px;margin:10px 4px 2px 0;background:linear-gradient(90deg,#b5584a,#c9884a,#2e8f6a 50%,#c9884a,#b5584a)}
+.tr i{position:absolute;top:50%;width:12px;height:12px;border-radius:50%;background:var(--ink);border:2px solid var(--bg);transform:translate(-50%,-50%);transition:left .7s cubic-bezier(.2,.8,.2,1)}
+.mr.lk .sc,.mr.lk u{filter:blur(5px)}.mr.lk .tr{opacity:.4}
+.st{border-left:3px solid var(--ok);background:rgba(46,143,106,.1);border-radius:12px;padding:10px 12px;margin-bottom:8px}
+.st .h{display:flex;gap:8px;align-items:center;font-weight:700;font-size:14px}.st .h em{font-style:normal;font-size:10px;font-weight:800;color:#5cbf98;background:rgba(46,143,106,.2);padding:2px 7px;border-radius:6px}
+.st p{font-size:12.5px;color:var(--soft);margin-top:4px}
+.more{width:100%;text-align:center;padding:12px;border-radius:12px;background:var(--card2);border:1px solid var(--ln);font-weight:700;font-size:13px;color:var(--gold)}
+.empty{padding:16px;border-radius:12px;background:#15161a;color:var(--mut);text-align:center;font-size:13px}
 
-.task{display:flex;gap:14px;padding:14px;background:var(--surf);border:1px solid var(--line);border-radius:12px;margin-bottom:8px;transition:all .2s}
-.task .box{width:22px;height:22px;border-radius:50%;border:2px solid var(--mute);display:flex;align-items:center;justify-content:center;color:transparent;flex-shrink:0}
-.task.on .box{background:var(--brass);border-color:var(--brass);color:var(--bg)}
-.task b{display:block;font-size:15px;color:var(--ink)}
-.task.on b{text-decoration:line-through;color:var(--mute)}
-.task p{margin:2px 0 0;font-size:12px;color:var(--mute)}
-
-.view{display:none;animation:fade .3s ease}
-.view.active{display:block}
-@keyframes fade{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+.botph{margin-top:14px;flex:none}.bs{display:flex;gap:8px;overflow-x:auto;padding:8px 0 2px;scrollbar-width:none}.bs::-webkit-scrollbar{display:none}
+.bs button{flex:none;width:64px;height:64px;border-radius:14px;overflow:hidden;border:1px solid var(--ln)}.bs img{width:100%;height:100%;object-fit:cover;display:block}
+.sy{display:grid;grid-template-columns:116px 1fr 54px;align-items:center;gap:8px;font-size:12.5px;margin:10px 0;color:#c9ccd3}
+.sb{position:relative;height:6px;border-radius:6px;background:var(--bg);border:1px solid var(--ln)}.sb::after{content:"";position:absolute;left:50%;top:-4px;bottom:-4px;width:1px;background:#4a4d58}
+.sb i{position:absolute;top:0;bottom:0;border-radius:6px}.sy b{text-align:right;font-size:12px}
+/* tariffs */
+.pl{padding:16px;margin-top:12px}.pl small{font-size:10.5px;font-weight:800;letter-spacing:.12em;color:var(--gold)}
+.pl h3{font-size:30px;font-weight:800;margin:2px 0}.pl h3 span{font-size:16px;color:var(--mut)}
+.pl p{font-size:13px;color:var(--soft);margin-bottom:8px}
+.pl li{list-style:none;display:flex;gap:8px;font-size:13px;color:#c9ccd3;margin:6px 0}.pl li svg{width:15px;height:15px;color:var(--ok);margin-top:2px}
+.pl ul{padding:0;margin:0 0 12px}.pl .tag{float:right;background:var(--gold);color:#17130b;font-size:10px;padding:3px 9px;border-radius:99px;font-weight:700;letter-spacing:0}
+#toast{position:fixed;left:50%;bottom:calc(var(--sb) + 90px);transform:translate(-50%,20px);opacity:0;z-index:99;background:var(--card2);color:var(--ink);border:1px solid rgba(197,168,128,.5);padding:10px 16px;border-radius:99px;font-size:13px;font-weight:600;pointer-events:none;transition:.3s}
+#toast.on{opacity:1;transform:translate(-50%,0)}
 </style>
 </head>
 <body>
+<div id="app">
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><linearGradient id="gg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ecdcb8"/><stop offset=".5" stop-color="#c5a880"/><stop offset="1" stop-color="#8f7650"/></linearGradient>
+<symbol id="lgo" viewBox="0 0 48 48" fill="none" stroke="url(#gg)" stroke-linecap="round" stroke-linejoin="round"><circle cx="24" cy="24" r="21.5" stroke-width="1.2"/><path d="M24 7C17.8 7 14 11.6 14 18c0 7 3 13 10 23 7-10 10-16 10-23 0-6.400-3.800-11-10-11z" stroke-width="1.6"/><path d="M24 7v34" stroke-width=".8" opacity=".7"/><path d="M14.500 18h19M17.200 28h13.600" stroke-width=".8" opacity=".7"/><circle cx="24" cy="18" r="1.500" fill="url(#gg)" stroke="none"/></symbol></defs></svg>
 
-<header class="p-4 flex items-center justify-between" style="padding-top:calc(env(safe-area-inset-top,0px) + 16px)">
-  <div class="flex items-center gap-3">
-    <div class="ava" id="ava-el"><span id="ava-ini">?</span></div>
-    <div>
-      <h1 id="user-name" class="text-xl font-bold leading-none">Гость</h1>
-      <span class="badge">PRO АНАЛИЗ</span>
+
+<section class="scr" id="s-home">
+  <div class="scroll" style="padding:0 0 8px">
+    <div class="logo"><svg class="lg" viewBox="0 0 48 48"><use href="#lgo"/></svg><div><b>FaceTheory</b><small>SIGNATURE</small></div></div>
+    <div style="padding:0 14px">
+      <div class="card" style="box-shadow:var(--sh)"><div class="hero" id="hero"></div><div class="last" id="last"></div></div>
+      <button class="card row" data-go="tariffs" style="width:100%"><span class="ic"><i data-lucide="credit-card"></i></span><span class="mut" id="buy">Нет анализов — купить</span><i data-lucide="chevron-right" class="ch"></i></button>
+      <div class="two"><button class="btn k" data-go="gender"><i data-lucide="scan-face"></i>Анализ лица</button><button class="btn" data-go="tariffs"><i data-lucide="tag"></i>Тарифы</button></div>
+      <button class="card row" data-toast="Раздел скоро появится" style="width:100%"><span class="ic"><i data-lucide="users"></i></span>Сотрудничество<i data-lucide="chevron-right" class="ch"></i></button>
+      <div class="card hist"><h3>История<span class="pill" data-toast="Показаны все анализы">Все</span></h3><div id="hist"></div></div>
+      <div class="foot"><span data-toast="Поддержка: @FaceTheorySupport">Поддержка</span><span>|</span><span data-toast="Условия использования">Условия</span></div>
     </div>
   </div>
-</header>
+</section>
 
-<div class="tabs">
-  <button class="tab active" data-target="view-map"><i data-lucide="scan-face"></i>Карта Лица</button>
-  <button class="tab" data-target="view-protocol"><i data-lucide="check-square"></i>Протокол</button>
-  <button class="tab" data-target="view-gallery"><i data-lucide="image"></i>Галерея</button>
+<section class="scr" id="s-gender">
+  <div class="top"><button class="ib" data-back><i data-lucide="arrow-left"></i></button>Настройка анализа</div>
+  <div class="scroll" style="display:flex;flex-direction:column;justify-content:center">
+    <div class="hb"><small>ПЕРЕД КАЖДЫМ АНАЛИЗОМ</small><h1>Укажи пол</h1><p>Нормы пропорций отличаются у мужчин и женщин, поэтому этот шаг помогает сделать оценку честнее.</p></div>
+    <button class="card gc" data-g="m"><span class="ic"><i data-lucide="mars"></i></span><span><b>Мужчина</b><small>Акцент на челюсть, брови, нос и маскулинные пропорции</small></span></button>
+    <button class="card gc" data-g="f"><span class="ic"><i data-lucide="venus"></i></span><span><b>Женщина</b><small>Акцент на скулы, губы, мягкость черт и форму лица</small></span></button>
+    <div class="note">Можно менять пол перед каждым новым фото. Прошлые результаты в истории от этого не изменяются.</div>
+  </div>
+</section>
+
+<section class="scr" id="s-upload">
+  <div class="top"><button class="ib" data-back><i data-lucide="arrow-left"></i></button>Анфас</div>
+  <div class="scroll">
+    <div class="cen"><h2>Загрузите фото анфас</h2><p>Сделайте или загрузите чёткое фото лица анфас (смотрите прямо в камеру). Нейтральное выражение, без улыбки — для точных метрик.</p><p style="font-size:13px">Не загружается фото? <a data-toast="Поддержка: @FaceTheorySupport">Напишите в поддержку</a></p></div>
+    <div id="bot" class="botph" style="display:none"></div>
+    <div class="up" id="zone"><input id="file" type="file" accept="image/*"><div id="zin"><i data-lucide="cloud-upload"></i>Нажмите, чтобы загрузить<small>PNG, JPG или JPEG</small></div></div>
+    <div class="two src"><button class="btn" id="bg1"><i data-lucide="image"></i>Галерея</button><button class="btn" id="bc1"><i data-lucide="camera"></i>Камера</button></div>
+    <input id="fileC" class="hid" type="file" accept="image/*" capture="user">
+  </div>
+  <div class="bar"><button class="btn" data-back>Назад</button><button class="btn k" id="go-an" disabled style="flex:2">Анализировать</button></div>
+</section>
+
+<section class="scr" id="s-loader"><div class="spin"></div><p id="lt">Определяем точки анфаса…</p><small id="ls">Это займёт пару секунд</small></section>
+
+<section class="scr" id="s-editor">
+  <div class="eh">
+    <div class="m"><span id="ei"></span><span id="ep"></span></div>
+    <div class="pb"><i id="eb"></i></div>
+    <div class="et"><h2 id="en"></h2><button class="ib" id="eundo" aria-label="Сбросить точку"><i data-lucide="undo-2"></i></button><button class="ib go" id="efin" aria-label="Проверить точки"><i data-lucide="check"></i></button></div>
+    <small id="ec"></small>
+    <div class="tb"><button class="on" data-t="0">Фото</button><button data-t="1">Как найти</button></div>
+  </div>
+  <div class="eb">
+    <div class="ref" id="ref"></div>
+    <div class="work" id="work">
+      <div class="wrap" id="wrap"><img id="wimg" alt=""><span id="dots"></span></div>
+      <div class="cross"><i></i></div>
+      <div class="hint" id="hint"><i data-lucide="move"></i>Тяните, чтобы двигать</div>
+      <button class="fb l" id="ereset" aria-label="Сбросить"><i data-lucide="undo-2"></i></button>
+      <button class="fb r" id="ezoom" aria-label="Масштаб"><i data-lucide="zoom-in" style="width:16px;height:16px"></i><span id="ez">1×</span></button>
+      <button class="nv l" id="eprev">НАЗАД</button><button class="nv r" id="enext">ДАЛЕЕ</button>
+    </div>
+  </div>
+</section>
+
+<section class="scr" id="s-profile">
+  <div class="top"><button class="ib" data-back><i data-lucide="arrow-left"></i></button>Профиль</div>
+  <div class="scroll">
+    <div class="cen"><h2>Загрузите фото профиля</h2><p>Сделайте или загрузите чёткое фото профиля (вид сбоку). Мы сразу выровняем кадр: нос вправо.</p></div>
+    <div class="up" id="pzone"><input id="pfile" type="file" accept="image/*"><div id="pin"><i data-lucide="cloud-upload"></i>Нажмите, чтобы загрузить<small>PNG, JPG или JPEG</small></div><div id="pal" class="pal" style="display:none">Выравниваем профиль…</div></div>
+    <div class="two src"><button class="btn" id="bg2"><i data-lucide="image"></i>Галерея</button><button class="btn" id="bc2"><i data-lucide="camera"></i>Камера</button></div>
+    <input id="pfileC" class="hid" type="file" accept="image/*" capture="user">
+  </div>
+  <div class="bar"><button class="btn" data-back>Назад</button><button class="btn" id="pskip">Пропустить профиль</button><button class="btn k" id="pgo" disabled>Продолжить</button></div>
+</section>
+
+<section class="scr" id="s-results">
+  <div class="rh">
+    <div class="rt"><button class="mn" data-go="home">Меню</button><svg class="lg" viewBox="0 0 48 48"><use href="#lgo"/></svg><h2>Итоговый балл</h2><span class="tot" id="tot"></span></div>
+    <div class="tabs" id="tabs"></div>
+  </div>
+  <div class="scroll" id="rbody"></div>
+  <div class="bar" id="rbar"><button class="btn k" data-go="tariffs"><i data-lucide="lock"></i>Разблокировать весь анализ</button></div>
+</section>
+
+<section class="scr" id="s-tariffs">
+  <div class="top"><button class="ib" data-back><i data-lucide="arrow-left"></i></button>Тарифы</div>
+  <div class="scroll">
+    <h1 style="font-size:30px;font-weight:800;margin-top:4px">Выбери план</h1><p class="mut" style="margin-top:4px">Пополняй баланс анализов и запускай оценку лица прямо в Telegram.</p>
+    <div class="card pl"><small>БЕСПЛАТНО</small><h3>0 <span>₽</span></h3><p>Попробуй без оплаты — анфас и профиль.</p><ul><li><i data-lucide="check"></i>Полный разбор симметрии лица</li><li><i data-lucide="check"></i>3 метрики гармонии — анфас и профиль</li><li><i data-lucide="check"></i>Точки и измерения прямо на фото</li></ul><button class="btn" data-unlock style="width:100%">Начать бесплатно</button></div>
+    <div class="card pl"><small>СТАРТ</small><h3>269 <span>₽</span></h3><p>Один анализ — анфас и профиль</p><ul><li><i data-lucide="check"></i>Итоговая оценка и проценты по шкале</li><li><i data-lucide="check"></i>Более 100 метрик: гармония, диморфизм, угловатость, черты и симметрия</li><li><i data-lucide="check"></i>Метрики анфаса и профиля, сильные стороны и зоны роста</li><li><i data-lucide="check"></i>Сохранение результата в историю</li></ul><button class="btn k" data-unlock style="width:100%">Получить 1 анализ</button></div>
+    <div class="card pl"><small>ТРОЙКА <span class="tag">Популярное</span></small><h3>599 <span>₽</span></h3><p>Три полных анализа со скидкой</p><ul><li><i data-lucide="check"></i>Всё из тарифа «Старт» ×3</li><li><i data-lucide="check"></i>Сравнение результатов в истории</li></ul><button class="btn k" data-unlock style="width:100%">Получить 3 анализа</button></div>
+    <p class="mut cen" style="font-size:12px;margin:14px 0">Демо: оплата не подключена, кнопки открывают полный анализ.</p>
+  </div>
+</section>
+
+<div class="sh" id="check"><div class="sp"><h3>Проверьте точки<span id="cn"></span></h3><div class="cw"><div id="cbox"></div></div><div class="bar"><button class="btn" id="cfix">← Исправить</button><button class="btn g" id="cgo" style="flex:2">Анализировать →</button></div></div></div>
+<div class="sh" id="guide"><div class="sp" id="gb"></div></div>
 </div>
-
-<main class="p-4 pb-20">
-  
-  <!-- VIEW: MAP -->
-  <div id="view-map" class="view active">
-    <div class="canvas-container">
-      <canvas id="face-canvas"></canvas>
-      <div id="ai-loader">
-        <div class="spinner"></div>
-        <p class="font-semibold font-serif tracking-widest uppercase text-xs">Инициализация нейросети...</p>
-      </div>
-      <div id="canvas-overlay" class="canvas-overlay">
-        <i data-lucide="camera" style="width:32px;height:32px;color:var(--brass);margin-bottom:12px"></i>
-        <p class="font-semibold text-sm">Нет базового фото</p>
-        <p class="text-xs mute mt-1">Перейди в Галерею и сделай селфи анфас "День 1", чтобы нейросеть построила разметку костей.</p>
-      </div>
-    </div>
-
-    <div class="mx">
-      <div class="mx-card"><span id="m-jaw-label">Индекс челюсти</span><b id="m-jaw">0.00</b></div>
-      <div class="mx-card"><span id="m-fwhr-label">FWHR Пропорция</span><b id="m-fwhr">0.00</b></div>
-      <div class="mx-card"><span id="m-asym-label">Симметрия</span><b id="m-asym">0%</b></div>
-      <div class="mx-card"><span id="m-gold-label">Золотое сечение</span><b id="m-gold">0.0/10</b></div>
-    </div>
-
-    <div class="tips-box">
-      <h3>Персональный План</h3>
-      <ul id="tips-list">
-        <li>Добавь фото День 1 в Галерею, чтобы ИИ составил план на основе твоих костей.</li>
-      </ul>
-    </div>
-  </div>
-
-  <!-- VIEW: PROTOCOL -->
-  <div id="view-protocol" class="view">
-    <h2 class="text-2xl font-bold serif text-[var(--brass)] mb-4">Ежедневный Трекинг</h2>
-    <div id="tasks-container"></div>
-  </div>
-
-  <!-- VIEW: GALLERY -->
-  <div id="view-gallery" class="view">
-    <h2 class="text-2xl font-bold serif text-[var(--brass)] mb-4">Контрольные Срезы</h2>
-    <p class="text-xs mute mb-4">Делай селфи анфас при ровном свете. Фото "День 1" сканируется нейросетью.</p>
-    
-    <div class="gal-grid" id="gallery-container"></div>
-  </div>
-
-</main>
-
-<input type="file" id="camera-input" accept="image/*" capture="user" hidden>
+<div id="toast"></div>
 
 <script>
-// ==========================================
-// 1. ИНИЦИАЛИЗАЦИЯ TELEGRAM
-// ==========================================
-const tg = window.Telegram && window.Telegram.WebApp;
-if(tg) {
-  tg.ready();
-  tg.expand();
-  tg.setHeaderColor('#0f1512');
-  tg.setBackgroundColor('#0f1512');
-  
-  const user = tg.initDataUnsafe?.user;
-  if(user) {
-    document.getElementById('user-name').innerText = user.first_name || 'Гость';
-    document.getElementById('ava-ini').innerText = (user.first_name || '?')[0].toUpperCase();
-    if(user.photo_url) {
-      document.getElementById('ava-el').innerHTML = `<img src="${user.photo_url}" alt="avatar">`;
-    }
-  }
-}
+const tg=window.Telegram&&Telegram.WebApp,$=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 
-// ==========================================
-// 2. ЛОГИКА ВКЛАДОК
-// ==========================================
-document.querySelectorAll('.tab').forEach(tab => {
-  tab.addEventListener('click', () => {
-    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-    tab.classList.add('active');
-    document.getElementById(tab.dataset.target).classList.add('active');
-    
-    // Если перешли на Карту лица, запускаем сканер
-    if(tab.dataset.target === 'view-map') checkAndRunScanner();
-  });
+/* ============ НАСТРОЙКИ ============
+ API_URL — адрес твоего сервера (https, без / в конце), напр. https://api.example.com
+ Пусто = всё работает без сервера: точки ставятся шаблоном, метрики считаются в браузере.
+ Токен бота и ключи моделей хранятся ТОЛЬКО на сервере — в этом файле их быть не должно.
+ Каждый запрос идёт с заголовком  Authorization: tma <initData>  — сервер проверяет подпись initData токеном бота.
+ Координаты везде нормированные 0..1 (x слева направо, y сверху вниз) относительно присланного фото.
+   GET    /photos        -> [{id, url, thumb, t}]                фото, которые пользователь отправил боту
+   POST   /detect        <- {image(dataURL), gender:'m'|'f'}  -> {points:{hairline:[x,y], leftEyePupil:[x,y], ... все 52 кода}}
+   POST   /analyze       <- {points, gender, image, profile?, thumb} -> {id, score, metrics:[{name,cat,score,pill,pos}], symmetry:[[название, %]]}
+                            (metrics/symmetry необязательны: если их нет, браузер посчитает сам; cat: г|с|у|д или harmony|symmetry|angularity|dimorphism)
+   GET    /history       -> [{id,t,score,gender,thumb,img?,metrics,symmetry?}]
+   DELETE /history/:id
+ Открытие из бота с конкретным фото: ссылка t.me/<бот>/<app>?startapp=p<id> или ?photo=<id> в URL кнопки web_app.
+*/
+const CONFIG={API_URL:'http://178.20.44.99:8000'};
+const API=()=>!!CONFIG.API_URL;
+async function api(m,p,b){const r=await fetch(CONFIG.API_URL+p,{method:m,headers:{'Content-Type':'application/json','Authorization':'tma '+((tg&&tg.initData)||'')},body:b?JSON.stringify(b):undefined});if(!r.ok)throw new Error(r.status);return r.status===204?{}:r.json()}
+const wait=ms=>new Promise(r=>setTimeout(r,ms)),arr=r=>Array.isArray(r)?r:(r&&r.items)||[];
+const CAT={harmony:'г',symmetry:'с',angularity:'у',dimorphism:'д'};
+const nm=m=>Array.isArray(m)?m:[m.name||m.n,CAT[m.cat]||m.cat||'',+(m.score!=null?m.score:m.s),m.pill||'',1,m.pos!=null?+m.pos:50];
+const IC={'arrow-left':'<path d="M19 12H5M12 19l-7-7 7-7"/>','chevron-right':'<path d="M9 6l6 6-6 6"/>','credit-card':'<rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/>','scan-face':'<path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/><path d="M8 14s1.5 2 4 2 4-2 4-2M9 9h.01M15 9h.01"/>','tag':'<path d="M12.6 2.6A2 2 0 0 0 11.2 2H4a2 2 0 0 0-2 2v7.2a2 2 0 0 0 .6 1.4l8.7 8.7a2.4 2.4 0 0 0 3.4 0l6.6-6.6a2.4 2.4 0 0 0 0-3.4z"/><circle cx="7.5" cy="7.5" r="1"/>','users':'<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.5-3.5 3-5.5 6.5-5.5s6 2 6.5 5.5M16 4.8a3.5 3.5 0 0 1 0 6.4M18 14.8c2 .6 3.3 2.4 3.5 5"/>','trash-2':'<path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14M10 11v6M14 11v6"/>','lock':'<rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>','undo-2':'<path d="M9 14L4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/>','check':'<path d="M5 12.5l4.5 4.5L19 7.5"/>','zoom-in':'<circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3M11 8v6M8 11h6"/>','move':'<path d="M12 2v20M2 12h20M9 5l3-3 3 3M9 19l3 3 3-3M5 9l-3 3 3 3M19 9l3 3-3 3"/>','cloud-upload':'<path d="M12 13v8M8 17l4-4 4 4"/><path d="M20 16.6A5 5 0 0 0 18 7h-1.3A8 8 0 1 0 4 15.3"/>','mars':'<circle cx="10" cy="14" r="5"/><path d="M14 10l6-6M15 4h5v5"/>','venus':'<circle cx="12" cy="9" r="5"/><path d="M12 14v8M9 19h6"/>'};
+Object.assign(IC,{image:'<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.100-3.100a2 2 0 0 0-2.800 0L6 21"/>',camera:'<path d="M14.500 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3z"/><circle cx="12" cy="13" r="3.200"/>'});
+const ics=()=>$$('i[data-lucide]').forEach(el=>{const p=IC[el.dataset.lucide];if(!p)return;const st=el.getAttribute('style');el.outerHTML=`<svg class="lucide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"${st?` style="${st}"`:''}>${p}</svg>`}),I=n=>`<i data-lucide="${n}"></i>`;
+try{if(tg){tg.ready();tg.expand();tg.setHeaderColor('#0d0e11');tg.setBackgroundColor('#0d0e11')}}catch(e){}
+const hap=k=>{try{k?tg.HapticFeedback.notificationOccurred('success'):tg.HapticFeedback.selectionChanged()}catch(e){}};
+const setH=()=>document.documentElement.style.setProperty('--app-h',((tg&&tg.viewportStableHeight)||innerHeight)+'px');
+setH();addEventListener('resize',setH);try{tg.onEvent('viewportChanged',setH)}catch(e){}
+let tt;const toast=m=>{const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('on'),2000)};
+
+/* ---- данные ---- */
+const PT=`hairline|Линия роста волос|100|34
+leftEyePupil|Зрачок левого глаза|126|100
+rightEyePupil|Зрачок правого глаза|74|100
+noseLeft|Левое крыло носа|116|148
+noseRight|Правое крыло носа|84|148
+lowerLip|Низ нижней губы|100|181
+chinBottom|Низ подбородка|100|218
+leftOuterEar|Левое ухо|167|118
+rightOuterEar|Правое ухо|33|118
+leftTemple|Левый висок|150|84
+rightTemple|Правый висок|50|84
+leftEyeMedialCanthus|Внутренний угол левого глаза|116|101
+leftEyeLateralCanthus|Внешний угол левого глаза|139|101
+leftEyeUpperEyelid|Верх левого глаза|126|94
+leftEyeLowerEyelid|Низ левого глаза|126|106
+leftEyelidHoodEnd|Конец века левого глаза|136|93
+leftBrowHead|Начало левой брови|112|88
+leftBrowInnerCorner|Нижний угол левой брови|112|92
+leftBrowPeak|Пик левой брови|130|82
+noseTip|Кончик носа|100|144
+leftBrowTail|Конец левой брови|146|86
+rightEyeMedialCanthus|Внутренний угол правого глаза|84|101
+rightEyeLateralCanthus|Внешний угол правого глаза|61|101
+rightEyeUpperEyelid|Верх правого глаза|74|94
+rightEyeLowerEyelid|Низ правого глаза|74|106
+rightEyelidHoodEnd|Конец века правого глаза|64|93
+rightBrowHead|Начало правой брови|88|88
+rightBrowInnerCorner|Нижний угол правой брови|88|92
+rightBrowPeak|Пик правой брови|70|82
+nasion|Переносица между глаз|100|96
+rightBrowTail|Конец правой брови|54|86
+glabella|Глабелла (линия бровей)|100|90
+nasalBase|Под носом|100|153
+noseBottom|Низ носа|100|149
+leftNoseBridge|Левая переносица|108|112
+rightNoseBridge|Правая переносица|92|112
+leftMouthCorner|Левый угол рта|122|172
+rightMouthCorner|Правый угол рта|78|172
+cupidsBow|Правый пик лука Купидона|94|166
+leftCupidsBow|Левый пик лука Купидона|106|166
+upperLipTop|Верх верхней губы|100|164
+mouthMiddle|Центр губ|100|171
+leftTopGonion|Верх левой челюсти|150|150
+rightTopGonion|Верх правой челюсти|50|150
+leftBottomGonion|Левый угол челюсти|146|196
+rightBottomGonion|Правый угол челюсти|54|196
+chinLeft|Левый край подбородка|116|214
+chinRight|Правый край подбородка|84|214
+neckLeft|Левая сторона шеи|126|236
+neckRight|Правая сторона шеи|74|236
+leftCheekbone|Левая скула|162|128
+rightCheekbone|Правая скула|38|128`;
+const PTS=PT.split('\n').map(l=>{const a=l.split('|'),c=a[0];return[a[1],c,+a[2],+a[3],/hairline/.test(c)?1:/Eye|Brow|[nN]ose|[lL]ip|[mM]outh|[cC]upid|glabella|nasion|nasal/.test(c)?3:2]});
+const N=PTS.length,ZS=[1,2,3,4,6,8],ix={};PTS.forEach((p,i)=>ix[p[1]]=i);
+const TABS=[['Обзор',''],['Гармония','г'],['Симметрия','с'],['Угловатость','у'],['Диморфизм','д']];
+const FREE=['Верхняя треть','Общее соотношение лица','Угол ноздрей'];
+const tip=p=>`Совместите красную точку на схеме сверху с прицелом. ${/Eye|Brow|Canthus/.test(p[1])?'Для глаз и бровей увеличьте масштаб кнопкой справа.':/[nN]ose|nasal|nasion/.test(p[1])?'Ориентир — центральная линия лица и основание носа.':/[lL]ip|[mM]outh|[cC]upid/.test(p[1])?'Ориентир — линия смыкания губ и уголки рта.':/Gonion|chin|Chin|neck/.test(p[1])?'Ориентир — контур челюсти и подбородка, шея под ушами.':'Ориентир — внешний контур лица и границы волос.'} Не уверены — оставьте как предложено и двигайтесь дальше.`;
+const FACE=`<rect x="-80" y="-60" width="360" height="360" fill="#ece7dd"/><path d="M84 200v44h32v-44z" fill="#eacdb4"/><path d="M38 112c-4-60 24-84 62-84s66 24 62 84c-2 40-14 72-34 92-10 10-18 14-28 14s-18-4-28-14c-20-20-32-52-34-92z" fill="#f3dcc6" stroke="#cdb59d"/><ellipse cx="36" cy="118" rx="7" ry="14" fill="#f0d3bb" stroke="#cdb59d"/><ellipse cx="164" cy="118" rx="7" ry="14" fill="#f0d3bb" stroke="#cdb59d"/><path d="M38 100C32 50 62 26 100 26s68 24 62 74c-6-26-22-48-62-48S44 74 38 100z" fill="#8a6d52"/><path d="M58 88q14-8 28-2M114 86q14-6 28 2" stroke="#6b5442" stroke-width="3" fill="none" stroke-linecap="round"/><ellipse cx="74" cy="100" rx="12" ry="5.5" fill="#fff" stroke="#6b5442"/><ellipse cx="126" cy="100" rx="12" ry="5.5" fill="#fff" stroke="#6b5442"/><circle cx="74" cy="100" r="4" fill="#4a5a52"/><circle cx="126" cy="100" r="4" fill="#4a5a52"/><path d="M100 104v38M90 148q10 7 20 0" stroke="#b79b82" fill="none" stroke-width="1.6"/><path d="M80 170q20-9 40 0q-20 14-40 0z" fill="#d98c87"/>`;
+
+/* ---- состояние ---- */
+let S={hist:[],u:false};try{S={...S,...JSON.parse(localStorage.getItem('ft1'))}}catch(e){}S.hist=(S.hist||[]).filter(h=>h.m);S.u=true;
+const save=()=>{try{localStorage.setItem('ft1',JSON.stringify(S))}catch(e){}};
+let PH=null,cur=null,rt=0,stack=['home'],gender='m',PRE=null,PR=null,BL=[];
+const dstr=t=>new Date(t).toLocaleDateString('ru-RU',{day:'numeric',month:'short'});
+
+/* ---- навигация ---- */
+function show(n){$$('.scr').forEach(s=>s.classList.toggle('on',s.id==='s-'+n));ics();
+ try{tg.BackButton[stack.length>1&&n!=='loader'?'show':'hide']();n==='editor'?tg.disableVerticalSwipes():tg.enableVerticalSwipes()}catch(e){}}
+function go(n){if(n==='home')stack=['home'];else stack.push(n);if(n==='upload')botPhotos();if(n==='home')renderHome();if(n==='tariffs')hap();show(n);if(n==='editor')edStart()}
+function back(){const o=$('.sh.on');if(o){o.classList.remove('on');return}if(stack.length>1){stack.pop();let n=stack[stack.length-1];if(n==='home')renderHome();if(n==='results')renderRes();show(n)}}
+try{tg.BackButton.onClick(back)}catch(e){}
+function loader(t,s,ms,cb){$('#lt').textContent=t;$('#ls').textContent=s;show('loader');setTimeout(cb,ms)}
+
+document.addEventListener('click',e=>{
+ const b=e.target.closest('[data-go],[data-back],[data-g],[data-toast],[data-unlock]');if(!b)return;
+ if('back' in b.dataset)return back();
+ if(b.dataset.toast)return toast(b.dataset.toast);
+ if('unlock' in b.dataset){S.u=true;save();hap(1);toast('Полный анализ открыт');stack.pop();const n=stack[stack.length-1];if(n==='results')renderRes();if(n==='home')renderHome();return show(n)}
+ if(b.dataset.g){gender=b.dataset.g;$$('.gc').forEach(x=>x.classList.toggle('sel',x===b));hap();return void setTimeout(()=>{go('upload');$$('.gc').forEach(x=>x.classList.remove('sel'))},220)}
+ hap();go(b.dataset.go);
 });
 
-// ==========================================
-// 3. MEDIAPIPE FACE MESH (НЕЙРОСЕТЬ В БРАУЗЕРЕ)
-// ==========================================
-let faceMeshInstance = null;
-let isAiLoading = false;
-
-function initMediaPipe() {
-  if (faceMeshInstance) return faceMeshInstance;
-  
-  faceMeshInstance = new FaceMesh({locateFile: (file) => {
-    return `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`;
-  }});
-  
-  faceMeshInstance.setOptions({
-    maxNumFaces: 1,
-    refineLandmarks: true,
-    minDetectionConfidence: 0.5,
-    minTrackingConfidence: 0.5
-  });
-  
-  faceMeshInstance.onResults(onResultsMediaPipe);
-  return faceMeshInstance;
+/* ---- главная ---- */
+function renderHome(){
+ const h=S.hist[0],sc=h?h.score.toFixed(2):'—';
+ $('#hero').innerHTML=h?`<img src="${h.img||h.th}" alt="">`:`<img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=800&fit=crop" style="width:100%;height:100%;object-fit:cover;opacity:0.7">`;
+ $('#last').innerHTML=`<small>ПОСЛЕДНИЙ АНАЛИЗ</small><div class="r"><span>Итог <b class="${S.u?'':'bl'}">${sc}</b></span><span>Анфас <b class="${S.u?'':'bl'}">${sc}</b></span><span>Профиль <b>—</b></span>${h?`<em>Сохранено ${dstr(h.t)}</em>`:''}</div>`;
+ $('#buy').textContent=S.hist.length?'Купить ещё анализ':'Нет анализов — купить';
+ $('#hist').innerHTML=S.hist.length?S.hist.map((x,i)=>`<div class="hi" data-i="${i}"><img src="${x.th}" alt=""><span><b>${dstr(x.t)}</b><small>Оценка: <span class="${S.u?'':'bl'}">${x.score.toFixed(2)}</span>/10</small></span><span class="sp"><button data-del="${i}" aria-label="Удалить">${I('trash-2')}</button>${I('chevron-right')}</span></div>`).join(''):`<div class="hi mut" style="font-size:13px">Здесь появятся ваши анализы</div>`;
+ ics();
 }
+$('#hist').addEventListener('click',e=>{
+ const d=e.target.closest('[data-del]');if(d){const it=S.hist.splice(+d.dataset.del,1)[0];save();hap();if(API()&&it&&it.id)api('DELETE','/history/'+it.id).catch(()=>{});return renderHome()}
+ const r=e.target.closest('.hi[data-i]');if(r){cur=S.hist[+r.dataset.i];rt=0;renderRes();go('results')}});
 
-// Вспомогательная математика расстояний
-function getDistance(lm1, lm2, w, h) {
-  const dx = (lm1.x - lm2.x) * w;
-  const dy = (lm1.y - lm2.y) * h;
-  return Math.sqrt(dx*dx + dy*dy);
+/* ---- загрузка фото ---- */
+/* ---- чтение фото: ориентация EXIF, масштаб, без искажений ---- */
+const exif=async f=>{try{const v=new DataView(await f.slice(0,65536).arrayBuffer());if(v.getUint16(0)!==65496)return 1;
+ for(let p=2;p+4<v.byteLength;){const m=v.getUint16(p),l=v.getUint16(p+2);
+  if(m===65505){const t=p+10,le=v.getUint16(t)===18761,o=t+v.getUint32(t+4,le),n=v.getUint16(o,le);
+   for(let i=0;i<n;i++){const e=o+2+i*12;if(v.getUint16(e,le)===274)return v.getUint16(e+8,le)||1}return 1}
+  if((m&65280)!==65280)break;p+=2+l}}catch(e){}return 1};
+async function readPhoto(f){
+ const u=URL.createObjectURL(f);
+ try{const im=await new Promise((ok,no)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=no;i.src=u});
+  const auto=!!(window.CSS&&CSS.supports&&CSS.supports('image-orientation','from-image')),o=auto?1:await exif(f),
+   w0=im.naturalWidth,h0=im.naturalHeight,k=Math.min(1,1600/Math.max(w0,h0)),w=Math.round(w0*k),h=Math.round(h0*k),c=document.createElement('canvas');
+  c.width=o>=5?h:w;c.height=o>=5?w:h;const x=c.getContext('2d');
+  x.transform(...[[1,0,0,1,0,0],[-1,0,0,1,w,0],[-1,0,0,-1,w,h],[1,0,0,-1,0,h],[0,1,1,0,0,0],[0,1,-1,0,h,0],[0,-1,-1,0,h,w],[0,-1,1,0,0,w]][Math.min(8,Math.max(1,o))-1]);
+  x.drawImage(im,0,0,w,h);return{url:c.toDataURL('image/jpeg',.9),w:c.width,h:c.height}}
+ finally{URL.revokeObjectURL(u)}}
+const bgOf=url=>`#121316 url("${url}") center/contain no-repeat`;
+const onFront=async e=>{const f=e.target.files[0];e.target.value='';if(!f)return;toast('Загружаем фото…');
+ try{PH=await readPhoto(f);$('#zone').style.background=bgOf(PH.url);$('#zin').style.display='none';$('#go-an').disabled=false;hap(1)}catch(err){toast('Не удалось открыть фото')}};
+$('#file').onchange=onFront;$('#fileC').onchange=onFront;
+$('#bg1').onclick=()=>$('#file').click();$('#bc1').onclick=()=>$('#fileC').click();
+async function useBot(p){toast('Загружаем фото…');const r=await fetch(p.url,{headers:{Authorization:'tma '+((tg&&tg.initData)||'')}});if(!r.ok)throw new Error(r.status);
+ PH=await readPhoto(await r.blob());$('#zone').style.background=bgOf(PH.url);$('#zin').style.display='none';$('#go-an').disabled=false;hap(1)}
+async function botPhotos(){const b=$('#bot');if(!API()){b.style.display='none';return}
+ try{BL=arr(await api('GET','/photos')).slice(0,12);b.innerHTML=`<small class="mut">Фото из чата с ботом</small><div class="bs">${BL.map((p,i)=>`<button data-b="${i}"><img src="${p.thumb||p.url}" alt=""></button>`).join('')}</div>`;b.style.display=BL.length?'block':'none'}catch(e){b.style.display='none'}}
+$('#bot').addEventListener('click',e=>{const x=e.target.closest('[data-b]');if(x)useBot(BL[+x.dataset.b]).catch(()=>toast('Не удалось загрузить фото'))});
+function prefill(){if(!PRE)return;PTS.forEach((p,j)=>{const q=Array.isArray(PRE)?PRE[j]:PRE[p[1]];if(q&&isFinite(q[0])&&isFinite(q[1]))P[j]=[Math.min(1,Math.max(0,+q[0])),Math.min(1,Math.max(0,+q[1])),p[4]]});PRE=null}
+$('#go-an').onclick=async()=>{if(!PH)return;
+ show('loader');$('#lt').textContent='Определяем точки анфаса…';$('#ls').textContent=API()?'Модель находит 52 точки на лице':'Это займёт пару секунд';PRE=null;
+ if(API()){try{const d=await api('POST','/detect',{image:PH.url,gender});PRE=d.points||d}catch(e){toast('Автоопределение недоступно — расставьте точки вручную')}}else await wait(1200);
+ stack.push('editor');show('editor');edStart()};
+
+/* ---- редактор точек ---- */
+const E={x:0,y:0,z:1,zi:0,s0:1,cw:0,ch:0,i:0,raf:0},P=[];let drag=null,tab=0;
+const dims=()=>[PH.w*E.s0*E.z,PH.h*E.s0*E.z];
+const dflt=p=>[.5+(p[2]-100)*.0042,.46+(p[3]-120)*.0042*PH.w/PH.h];
+function fit(){const k=Object.keys(P).map(Number);if(k.length<2)return null;let zx=0,zy=0,wx=0,wy=0;
+ k.forEach(j=>{zx+=PTS[j][2];zy+=PTS[j][3];wx+=P[j][0]*PH.w;wy+=P[j][1]*PH.h});const n=k.length;zx/=n;zy/=n;wx/=n;wy/=n;
+ let ar=0,ai=0,den=0;k.forEach(j=>{const a=PTS[j][2]-zx,b=PTS[j][3]-zy,c=P[j][0]*PH.w-wx,d=P[j][1]*PH.h-wy;ar+=a*c+b*d;ai+=a*d-b*c;den+=a*a+b*b});
+ if(!den)return null;const Ar=ar/den,Ai=ai/den;
+ return t=>[(Ar*(t[2]-zx)-Ai*(t[3]-zy)+wx)/PH.w,(Ai*(t[2]-zx)+Ar*(t[3]-zy)+wy)/PH.h]}
+const pred=i=>{const f=fit();return f?f(PTS[i]):dflt(PTS[i])};
+function clamp(){const[w,h]=dims();E.x=Math.min(E.cw/2,Math.max(E.cw/2-w,E.x));E.y=Math.min(E.ch/2,Math.max(E.ch/2-h,E.y))}
+function paint(){E.raf=0;const w=$('#wrap');w.style.transform=`translate3d(${E.x}px,${E.y}px,0) scale(${E.z})`;w.style.setProperty('--iz',1/E.z)}
+const sched=()=>E.raf||(E.raf=requestAnimationFrame(paint));
+const center=()=>{const[w,h]=dims();return[(E.cw/2-E.x)/w,(E.ch/2-E.y)/h]};
+function setC(nx,ny){const[w,h]=dims();E.x=E.cw/2-nx*w;E.y=E.ch/2-ny*h;clamp();sched()}
+function edStart(){
+ if(!PH)return;P.length=0;E.i=0;$('#wimg').src=PH.url;prefill();
+ requestAnimationFrame(()=>{const k=$('#work');E.cw=k.clientWidth;E.ch=k.clientHeight;E.s0=Math.max(E.cw/PH.w,E.ch/PH.h);
+  const w=$('#wrap');w.style.width=PH.w*E.s0+'px';w.style.height=PH.h*E.s0+'px';$('#hint').style.opacity=1;edLoad()});
 }
-
-// Обработка результатов (Рисуем сетку и считаем)
-function onResultsMediaPipe(results) {
-  const canvas = document.getElementById('face-canvas');
-  const ctx = canvas.getContext('2d');
-  document.getElementById('ai-loader').style.display = 'none';
-  isAiLoading = false;
-
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  
-  if (results.image) {
-    // Рисуем само фото юзера
-    ctx.drawImage(results.image, 0, 0, canvas.width, canvas.height);
-    // Темная маска
-    ctx.fillStyle = 'rgba(15, 21, 18, 0.4)';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-  }
-
-  if (results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0) {
-    const lm = results.multiFaceLandmarks[0];
-    const w = canvas.width;
-    const h = canvas.height;
-
-    // --- МАТЕМАТИКА КОСТЕЙ (Точные точки MediaPipe) ---
-    const face_width = getDistance(lm[234], lm[454], w, h); // Ширина от скулы до скулы
-    const jaw_width = getDistance(lm[132], lm[361], w, h);  // Ширина углов челюсти
-    const midface_height = getDistance(lm[168], lm[0], w, h); // От переносицы до губы
-    
-    // Индексы
-    const jaw_ratio = face_width > 0 ? (jaw_width / face_width) : 0.85;
-    const fwhr = midface_height > 0 ? (face_width / midface_height) : 1.8;
-    
-    // Асимметрия (простая: разница высоты глаз)
-    const eyeL = lm[33];
-    const eyeR = lm[263];
-    const heightDiff = Math.abs((eyeL.y - eyeR.y) * h);
-    let symPercent = 100 - (heightDiff * 1.5);
-    if(symPercent > 100) symPercent = 100;
-    if(symPercent < 0) symPercent = 0;
-
-    // Золотое сечение (условное)
-    let golden_score = 9.5 - Math.abs(1.85 - fwhr) * 2 - Math.abs(0.92 - jaw_ratio) * 10;
-    golden_score = Math.max(1.5, Math.min(9.5, golden_score));
-
-    // Обновляем UI
-    document.getElementById('m-jaw').innerText = jaw_ratio.toFixed(2);
-    document.getElementById('m-fwhr').innerText = fwhr.toFixed(2);
-    document.getElementById('m-asym').innerText = symPercent.toFixed(0) + '%';
-    document.getElementById('m-gold').innerText = golden_score.toFixed(1) + '/10';
-
-    generateSmartTips(jaw_ratio, fwhr, symPercent);
-
-    // --- ОТРИСОВКА КАРКАСА И 478 ТОЧЕК ---
-    ctx.lineWidth = 1;
-    
-    // Соединяем точки костей челюсти
-    ctx.strokeStyle = 'rgba(196, 167, 107, 0.9)'; // Цвет brass
-    ctx.beginPath();
-    ctx.moveTo(lm[234].x * w, lm[234].y * h); // Левая скула
-    ctx.lineTo(lm[132].x * w, lm[132].y * h); // Левая челюсть
-    ctx.lineTo(lm[152].x * w, lm[152].y * h); // Подбородок
-    ctx.lineTo(lm[361].x * w, lm[361].y * h); // Правая челюсть
-    ctx.lineTo(lm[454].x * w, lm[454].y * h); // Правая скула
-    ctx.stroke();
-
-    // Рисуем все коннекты (Face Mesh сетка)
-    drawConnectors(ctx, lm, FACEMESH_TESSELATION, {color: 'rgba(196, 167, 107, 0.1)', lineWidth: 0.5});
-    drawConnectors(ctx, lm, FACEMESH_RIGHT_EYE, {color: 'rgba(196, 167, 107, 0.5)'});
-    drawConnectors(ctx, lm, FACEMESH_LEFT_EYE, {color: 'rgba(196, 167, 107, 0.5)'});
-    drawConnectors(ctx, lm, FACEMESH_FACE_OVAL, {color: 'rgba(196, 167, 107, 0.6)'});
-
-    // Опорные точки костей
-    const keyPoints = [234, 454, 132, 361, 152, 168, 0];
-    ctx.fillStyle = '#c4a76b';
-    keyPoints.forEach(idx => {
-      ctx.beginPath();
-      ctx.arc(lm[idx].x * w, lm[idx].y * h, 3, 0, 2*Math.PI);
-      ctx.fill();
-    });
-
-  } else {
-    document.getElementById('tips-list').innerHTML = `<li>Лицо не обнаружено. Убедись, что на фото День 1 четко видно лицо анфас.</li>`;
-  }
+function edLoad(){
+ const p=PTS[E.i],q=P[E.i]||pred(E.i);E.zi=Math.max(0,ZS.indexOf(P[E.i]?P[E.i][2]:p[4]));E.z=ZS[E.zi]||1;
+ $('#ei').textContent=`${E.i+1} из ${N}`;const pc=(E.i+1)/N*100;$('#ep').textContent=pc.toFixed(1)+'\%';$('#eb').style.width=pc+'%';
+ $('#en').textContent=p[0];$('#ec').textContent=p[1]+' (анфас)';$('#ez').textContent=E.z+'×';
+ $('#eprev').style.opacity=E.i?1:.55;$('#enext').textContent=E.i===N-1?'ГОТОВО':'ДАЛЕЕ';
+ $('#ref').className='ref'+(tab?' tip':'');$('#ref').innerHTML=tab?tip(p):`<svg viewBox="${p[2]-48} ${p[3]-21} 96 42" preserveAspectRatio="xMidYMid slice">${FACE}<circle cx="${p[2]}" cy="${p[3]}" r="1.8" fill="#ff3b30"/></svg>`;
+ const bw=PH.w*E.s0,bh=PH.h*E.s0;$('#dots').innerHTML=P.map((o,j)=>o&&j!==E.i?`<b class="dt" style="left:${o[0]*bw}px;top:${o[1]*bh}px"></b>`:'').join('');
+ setC(q[0],q[1]);
 }
+function commit(){const c=center();P[E.i]=[c[0],c[1],E.z]}
+function fillRest(){const f=fit();PTS.forEach((p,j)=>{if(!P[j]){const d=f?f(p):dflt(p);P[j]=[d[0],d[1],p[4]]}})}
+const work=$('#work');
+work.addEventListener('pointerdown',e=>{if(e.target.closest('button'))return;drag={x:e.clientX,y:e.clientY,ox:E.x,oy:E.y};work.setPointerCapture(e.pointerId);$('#hint').style.opacity=0});
+work.addEventListener('pointermove',e=>{if(!drag)return;E.x=drag.ox+e.clientX-drag.x;E.y=drag.oy+e.clientY-drag.y;clamp();sched()});
+['pointerup','pointercancel'].forEach(t=>work.addEventListener(t,()=>{drag=null}));
+$('#ezoom').onclick=()=>{const c=center();E.zi=(E.zi+1)%ZS.length;E.z=ZS[E.zi];$('#ez').textContent=E.z+'×';setC(c[0],c[1]);hap()};
+const reset=()=>{delete P[E.i];edLoad();hap()};$('#ereset').onclick=reset;$('#eundo').onclick=reset;
+$('#enext').onclick=()=>{commit();hap();if(E.i<N-1){E.i++;edLoad()}else openCheck()};
+$('#eprev').onclick=()=>{if(!E.i)return;commit();E.i--;edLoad();hap()};
+$('#efin').onclick=()=>{commit();fillRest();openCheck()};
+$$('.tb button').forEach(b=>b.onclick=()=>{tab=+b.dataset.t;$$
+('.tb button').forEach(x=>x.classList.toggle('on',x===b));const p=PTS[E.i];$('#ref').className='ref'+(tab?' tip':'');$('#ref').innerHTML=tab?tip(p):`<svg viewBox="${p[2]-48} ${p[3]-21} 96 42" preserveAspectRatio="xMidYMid slice">${FACE}<circle cx="${p[2]}" cy="${p[3]}" r="1.8" fill="#ff3b30"/></svg>`});
+addEventListener('resize',()=>{if($('#s-editor').classList.contains('on')){const c=center();E.cw=work.clientWidth;E.ch=work.clientHeight;setC(c[0],c[1])}});
 
-// Запуск сканера
-async function checkAndRunScanner() {
-  const basePhoto = localStorage.getItem('proto31_gal_1');
-  const overlay = document.getElementById('canvas-overlay');
-  const loader = document.getElementById('ai-loader');
-  
-  if(!basePhoto) {
-    overlay.style.display = 'flex';
-    return;
-  }
-  
-  overlay.style.display = 'none';
-  if(isAiLoading) return;
-  
-  loader.style.display = 'flex';
-  isAiLoading = true;
+/* ---- проверка точек и анализ ---- */
+function openCheck(){fillRest();$('#cn').textContent=N+' точек';
+ $('#cbox').innerHTML=`<img src="${PH.url}" alt="">`+P.map(o=>`<b class="dt" style="left:${o[0]*100}%;top:${o[1]*100}%"></b>`).join('');$('#check').classList.add('on')}
+$('#cfix').onclick=()=>$('#check').classList.remove('on');
+$('#cgo').onclick=()=>{$('#check').classList.remove('on');stack.push('profile');show('profile');gi=0;guide();$('#guide').classList.add('on')};
 
-  const fm = initMediaPipe();
-  
-  const img = new Image();
-  img.onload = async () => {
-    // Настраиваем канвас под размер фотки
-    const canvas = document.getElementById('face-canvas');
-    canvas.width = img.width;
-    canvas.height = img.height;
-    
-    // Запускаем анализ нейросетью
-    await fm.send({image: img});
-  };
-  img.src = basePhoto;
+/* ---- профиль ---- */
+const PROF=bad=>`<svg viewBox="0 0 100 100"><g ${bad?'transform="translate(6 6) rotate(-16 50 50) scale(.78 1)"':''} fill="#e8c9ae" stroke="#b79b82" stroke-width="2"><path d="M30 14c22-6 40 6 42 28 1 8 3 12 8 18-3 3-7 3-7 7 2 4 4 7 1 10-2 3-6 3-6 8 0 12-9 18-22 18H34z"/><circle cx="62" cy="40" r="2" fill="#4a5a52"/></g></svg>`;
+const GS=[['Профиль ровно 90°',['Поверните голову строго на 90° в сторону.','Кончик носа должен совпадать с контуром лица.','В кадре должно быть видно только одно ухо.'],1],
+ ['Волосы убраны',['Откройте лоб и ухо, уберите чёлку.','Не закрывайте линию челюсти воротником или шарфом.']],
+ ['Нейтральное лицо',['Рот закрыт, зубы разомкнуты, без улыбки.','Смотрите прямо вперёд, подбородок параллельно полу.']],
+ ['Ровный свет',['Свет спереди или сбоку, без жёстких теней.','Камера на уровне глаз, фон однотонный.']]];
+let gi=0;
+function guide(){const g=GS[gi],cl=()=>$('#guide').classList.remove('on');
+ $('#gb').innerHTML=`<div style="padding:18px 18px 8px"><small class="mut">Шаг ${gi+1} из ${GS.length}</small><div style="font-size:22px;font-weight:800;margin:4px 0 10px">${g[0]}</div>${g[2]?`<div class="gi"><div class="ok">${PROF()}✓ Идеально</div><div class="no">${PROF(1)}✕ Слишком под углом</div></div>`:''}<p style="color:#b5b8c0;font-size:14px;line-height:1.55">${g[1].join('<br>')}</p></div><div class="bar"><button class="btn" id="gp">${gi?'Назад':'Закрыть'}</button><button class="btn k" id="gn">${gi<GS.length-1?'Далее':'Понятно'}</button></div>`;
+ $('#gp').onclick=()=>gi?(gi--,guide()):cl();$('#gn').onclick=()=>gi<GS.length-1?(gi++,guide()):cl()}
+const onProf=async e=>{const f=e.target.files[0];e.target.value='';if(!f)return;const a=$('#pal');toast('Загружаем фото…');
+ try{const r=await readPhoto(f);PR=r.url;$('#pzone').style.background=bgOf(r.url);$('#pin').style.display='none';a.style.display='grid';
+  setTimeout(()=>{a.style.display='none';$('#pgo').disabled=false;hap(1)},1400)}catch(err){toast('Не удалось открыть фото')}};
+$('#pfile').onchange=onProf;$('#pfileC').onchange=onProf;$('#bg2').onclick=()=>$('#pfile').click();$('#bc2').onclick=()=>$('#pfileC').click();
+$('#pskip').onclick=()=>run();$('#pgo').onclick=()=>run();
+
+/* ---- расчёт метрик по точкам ---- */
+function calc(){
+ const q=PTS.map((_,i)=>[P[i][0]*PH.w,P[i][1]*PH.h]),pa=q[ix.rightEyePupil],pb=q[ix.leftEyePupil],th=Math.atan2(pb[1]-pa[1],pb[0]-pa[0]),c=Math.cos(th),sn=Math.sin(th),mx=(pa[0]+pb[0])/2,my=(pa[1]+pb[1])/2;
+ const R=q.map(p=>{const x=p[0]-mx,y=p[1]-my;return[x*c+y*sn,-x*sn+y*c]});
+ const g=k=>R[ix[k]],dx=(k,l)=>Math.abs(g(k)[0]-g(l)[0]),dy=(k,l)=>Math.abs(g(k)[1]-g(l)[1]),
+  ang=(k,l,m)=>{const u=[g(k)[0]-g(l)[0],g(k)[1]-g(l)[1]],v=[g(m)[0]-g(l)[0],g(m)[1]-g(l)[1]];return Math.acos(Math.max(-1,Math.min(1,(u[0]*v[0]+u[1]*v[1])/((Math.hypot(u[0],u[1])*Math.hypot(v[0],v[1]))||1))))*57.3},
+  til=(l,m)=>Math.atan2(g(m)[1]-g(l)[1],dx(l,m)||1)*57.3;
+ const H=dy('hairline','chinBottom'),CW=dx('leftCheekbone','rightCheekbone'),IPD=dx('leftEyePupil','rightEyePupil'),NW=dx('noseLeft','noseRight'),MW=dx('leftMouthCorner','rightMouthCorner'),JW=dx('leftBottomGonion','rightBottomGonion'),TW=dx('leftTemple','rightTemple'),CHW=dx('chinLeft','chinRight'),M=gender==='m';
+ const mid=['glabella','nasalBase','mouthMiddle','chinBottom','hairline'].reduce((t,k)=>t+g(k)[0],0)/5;
+ const pairs=[['leftEyePupil','rightEyePupil'],['leftEyeLateralCanthus','rightEyeLateralCanthus'],['noseLeft','noseRight'],['leftMouthCorner','rightMouthCorner'],['leftBottomGonion','rightBottomGonion'],['leftOuterEar','rightOuterEar'],['leftCheekbone','rightCheekbone'],['leftBrowTail','rightBrowTail'],['leftTemple','rightTemple'],['chinLeft','chinRight']];
+ const asym=pairs.reduce((t,[l,r])=>{const A=g(l)[0]-mid,B=mid-g(r)[0];return t+Math.abs(A-B)/(Math.abs(A+B)||1)},0)/pairs.length;
+ const cup=(g('mouthMiddle')[1]-(g('cupidsBow')[1]+g('leftCupidsBow')[1])/2)/MW;
+ const SL=['Зрачки','Внешние углы глаз','Крылья носа','Углы рта','Углы челюсти','Уши','Скулы','Хвосты бровей','Виски','Подбородок'];
+ const sym=pairs.map(([l,r],i)=>{const A=g(l)[0]-mid,B=mid-g(r)[0];return[SL[i],+(((A-B)/(Math.abs(A+B)||1))*100).toFixed(1)]});
+ const T=[
+ ['Верхняя треть','г',dy('hairline','glabella')/H,.333,.08,'%'],['Средняя треть','г',dy('glabella','nasalBase')/H,.333,.08,'%'],['Нижняя треть','г',dy('nasalBase','chinBottom')/H,.333,.08,'%'],
+ ['Пропорция нижней трети','г',dy('nasalBase','mouthMiddle')/dy('mouthMiddle','chinBottom'),.5,.25,'x'],['Ширина к высоте лица','г',CW/H,.69,.12,'x'],['Общее соотношение лица','г',H/CW,1.45,.25,'x'],
+ ['Средняя зона лица','г',dy('leftEyePupil','mouthMiddle')/IPD,1,.25,'x'],['Ширина висков','г',TW/CW,.88,.15,'x'],['Ширина челюсти','г',JW/CW,M?.8:.72,.15,'x'],
+ ['Высота скул','г',dy('leftEyePupil','leftCheekbone')/dy('leftEyePupil','chinBottom'),.27,.1,'x'],['Межглазное расстояние','г',IPD/CW,.46,.08,'x'],
+ ['Кантальный наклон','с',(til('leftEyeLateralCanthus','leftEyeMedialCanthus')+til('rightEyeLateralCanthus','rightEyeMedialCanthus'))/2,4,6,'°'],
+ ['Низкая посадка бровей','с',dy('leftBrowInnerCorner','leftEyeUpperEyelid')/IPD,.17,.1,'x'],
+ ['Наклон бровей','с',(til('leftBrowPeak','leftBrowHead')+til('rightBrowPeak','rightBrowHead'))/2,M?8:14,12,'°'],
+ ['Длина бровей','с',dx('leftBrowHead','leftBrowTail')/IPD,.62,.18,'x'],['Симметрия лица','с',asym,0,.08,'%'],
+ ['Симметрия глаз','с',dy('leftEyeLateralCanthus','rightEyeLateralCanthus')/IPD,0,.12,'%'],['Симметрия бровей','с',dy('leftBrowPeak','rightBrowPeak')/IPD,0,.15,'%'],['Симметрия рта','с',dy('leftMouthCorner','rightMouthCorner')/MW,0,.12,'%'],
+ ['Переносица к носу','у',dx('leftNoseBridge','rightNoseBridge')/NW,.6,.2,'x'],['Канты к носу','у',NW/dx('leftEyeMedialCanthus','rightEyeMedialCanthus'),1,.2,'x'],
+ ['Угол ноздрей','у',ang('noseLeft','noseTip','noseRight'),130,35,'°'],['Положение кончика носа','у',dy('nasion','noseTip')/dy('nasion','nasalBase'),.85,.1,'x'],
+ ['Ширина носа к лицу','у',NW/CW,.25,.06,'x'],['Угол челюсти','у',ang('rightTopGonion','rightBottomGonion','chinRight'),M?120:130,25,'°'],
+ ['Глубина лука Купидона','д',cup,.12,.08,'x'],['Нижняя к верхней губе','д',dy('mouthMiddle','lowerLip')/dy('upperLipTop','mouthMiddle'),1.5,.6,'x'],
+ ['Ширина рта к носу','д',MW/NW,1.5,.35,'x'],['Зрачки к рту','д',IPD/MW,1.3,.3,'x'],['Ширина подбородка','д',CHW/MW,.95,.3,'x'],
+ ['Высота подбородка','д',dy('lowerLip','chinBottom')/dy('nasalBase','chinBottom'),.6,.15,'x'],['Ширина рта к лицу','д',MW/CW,.36,.08,'x'],['Положение глаз по вертикали','д',dy('hairline','leftEyePupil')/H,.4,.06,'%']];
+ const out=T.map(([n,cat,v,id,tol,f])=>{const ok=isFinite(v),dev=ok?v-id:0,sc=ok?Math.round(Math.max(0,10-5*Math.abs(dev)/tol)*100)/100:5;
+  return [n,cat,sc,!ok?'—':f==='%'?(v*100).toFixed(1)+'%':f==='x'?v.toFixed(2)+'x':v.toFixed(1)+'°',FREE.includes(n)?1:0,Math.max(8,Math.min(92,50+Math.max(-1,Math.min(1,dev/tol))*42))]});out.sym=sym;return out}
+
+async function run(){
+ show('loader');$('#lt').textContent='Анализируем…';$('#ls').textContent='Определяем пропорции лица';
+ const t0=Date.now(),c=document.createElement('canvas'),mk=z=>{const k=z/Math.max(PH.w,PH.h);c.width=Math.round(PH.w*k);c.height=Math.round(PH.h*k);c.getContext('2d').drawImage($('#wimg'),0,0,c.width,c.height);return c.toDataURL('image/jpeg',.7)};
+ fillRest();const pts={};PTS.forEach((p,j)=>pts[p[1]]=[+P[j][0].toFixed(5),+P[j][1].toFixed(5)]);
+ const img=mk(520),th=mk(96);let m=null,sc=null,sym=null,id=null;
+ if(API()){try{const r=await api('POST','/analyze',{points:pts,gender,image:PH.url,profile:PR,thumb:th});id=r.id;sym=r.symmetry||null;if(r.metrics&&r.metrics.length){m=r.metrics.map(nm);sc=+r.score}}catch(e){toast('Сервер не ответил — посчитано в браузере')}}
+ if(!m){m=calc();sym=m.sym}else if(!sym){try{sym=calc().sym}catch(e){}}
+ if(sc==null||!isFinite(sc))sc=m.reduce((t,x)=>t+x[2],0)/m.length;
+ await wait(Math.max(0,1300-(Date.now()-t0)));
+ cur={id,t:Date.now(),score:sc,g:gender,img,th,m,sym};
+ S.hist.unshift(cur);S.hist.forEach((h,i)=>{if(i)delete h.img});S.hist=S.hist.slice(0,12);save();rt=0;hap(1);stack=['home','results'];renderRes();show('results')}
+
+/* ---- результаты ---- */
+const mrow=m=>{const lk=!S.u&&!m[4];return `<div class="mr${lk?' lk':''}" data-lk="${lk?1:0}"><div class="mh"><span>${m[0]}</span><u>${m[3]}</u><span class="sc" style="color:${m[2]<7.5?'#c9884a':'#2e8f6a'}">${m[2].toFixed(2)}</span>${I(lk?'lock':'chevron-right')}</div><div class="tr"><i style="left:0%" data-p="${m[5]}"></i></div></div>`};
+const avg=a=>a.reduce((t,x)=>t+x[2],0)/(a.length||1);
+function renderRes(){
+ if(!cur)cur=S.hist[0];if(!cur)return;
+ const T=TABS[rt],src=cur.img||cur.th,list=cur.m.filter(m=>!T[1]||m[1]===T[1]),ts=rt?avg(list):cur.score;
+ $('#tot').innerHTML=`${cur.score.toFixed(2)}<small> / 10</small>`;
+ $('#tabs').innerHTML=TABS.map((t,i)=>`<button class="${i===rt?'on':''}" data-r="${i}">${t[0]}</button>`).join('');
+ const sorted=[...cur.m].sort((a,b)=>b[2]-a[2]),st=sorted.filter(m=>m[2]>=8.5).slice(0,5),gr=sorted.filter(m=>m[2]<7.5).reverse().slice(0,4);
+ const stc=(m,hid)=>`<div class="st"${hid?' hidden':''}><div class="h"><em>${m[2]>=9.8?'ИДЕАЛ':'ОТЛИЧНО'}</em>${m[2].toFixed(2)} — ${m[0]}</div><p>Показатель «${m[0].toLowerCase()}» (${m[3]}) близок к эталонным пропорциям для выбранного пола.</p></div>`;
+ const symc=(rt===2&&cur.sym&&cur.sym.length)?`<h2 class="sec">График симметрии</h2><div class="card" style="padding:12px 14px 4px;margin-bottom:14px">${cur.sym.map(([n,v])=>{const a=Math.min(Math.abs(v),10)*5,col=Math.abs(v)<3?'var(--ok)':Math.abs(v)<6?'var(--gold)':'var(--warn)';return `<div class="sy"><span>${n}</span><div class="sb"><i style="width:${a}%;${v<0?'right':'left'}:50\%;background:${col}"></i></div><b>${v>0?'+':''}${Number(v).toFixed(1)}%</b></div>`}).join('')}<p class="mut" style="font-size:11.5px;margin:8px 0 10px">Разница левой и правой стороны относительно оси лица. «+» — шире правая сторона на фото, 0% — идеальная симметрия.</p></div>`:'';
+ $('#rbody').innerHTML=(rt?`<div class="card sr"><img src="${cur.th||''}" alt=""><b>${T[0].toUpperCase()}</b><strong>${ts.toFixed(2)}<small>/10</small></strong></div>`:'')+
+  `<div class="pc"><img src="${src}" alt=""><div><span><b>${rt?T[0]+' анфаса':'Гармония анфаса'}</b><small>Оценка</small></span><strong>${ts.toFixed(2)}<small> / 10</small></strong></div></div><p class="cap">Разбор ${rt?T[0].toLowerCase():'гармонии'}</p>`+
+  symc+`<h2 class="sec">${rt?'Метрики':'Все метрики'} (${list.length})</h2><div class="card">${list.map(mrow).join('')}</div>`+
+  `<h2 class="sec" style="margin-top:18px">Сильные стороны</h2><div class="card" style="padding:10px">${st.length?st.map((m,i)=>stc(m,i>2)).join(''):'<div class="empty">Нет метрик</div>'}${st.length>3?`<button class="more" id="more">Показать ещё ${st.length-3}</button>`:''}</div>`+
+  `<h2 class="sec" style="margin-top:18px">Зоны роста</h2><div class="card" style="padding:10px">${S.u&&gr.length?gr.map(m=>`<div class="st" style="border-color:#c9884a;background:rgba(201,136,74,.1)"><div class="h">${m[2].toFixed(2)} — ${m[0]}</div><p>Сейчас ${m[3]}. Есть потенциал: уход, мимика и причёска могут визуально приблизить показатель к эталону.</p></div>`).join(''):'<div class="empty">Нет метрик</div>'}</div>`+
+  `<p class="mut cen" style="font-size:12px;margin:14px 0 0">Развлекательный геометрический разбор по отмеченным точкам, не медицинская оценка.</p>`+
+  `<button class="btn k" id="newan" style="width:100%;margin:12px 0 8px">Новый анализ</button>`;
+ $('#rbar').style.display=S.u?'none':'flex';ics();  setTimeout(()=>$$('#rbody .tr i').forEach(i=>i.style.left=i.dataset.p+'%'),40);
+ const mo=$('#more');if(mo)mo.onclick=()=>{$$('#rbody .st[hidden]').forEach(x=>x.hidden=false);mo.remove()};
+ $('#newan').onclick=()=>{PH=null;P.length=0;PR=null;$('#go-an').disabled=true;$('#zone').style.background='';$('#zin').style.display='';$('#pzone').style.background='';$('#pin').style.display='';$('#pgo').disabled=true;go('gender')};
 }
+$('#tabs').addEventListener('click',e=>{const b=e.target.closest('[data-r]');if(!b)return;rt=+b.dataset.r;hap();renderRes();$('#rbody').scrollTop=0});
+$('#rbody').addEventListener('click',e=>{const r=e.target.closest('.mr');if(r&&r.dataset.lk==='1')go('tariffs')});
 
-// Генератор уникальных рекомендаций
-function generateSmartTips(jaw, fwhr, asym) {
-  const tips = [];
-  
-  if (jaw < 0.86) {
-    tips.push("Твой индекс челюсти ниже нормы костного каркаса. Практикуй хард-мьюинг для выдвижения максиллы вперед.");
-    tips.push("Жуй жесткую пищу или эспандеры для развития жевательных мышц (массетеров) и расширения нижней трети.");
-  } else {
-    tips.push("У тебя отличный, широкий костный каркас челюсти. Поддерживай тонус мышц и следи за процентом жира на лице.");
-  }
-
-  if (fwhr < 1.75) {
-    tips.push("У тебя вытянутое лицо (низкий FWHR). Избегай стрижек с объемом сверху, выбирай текстурированные челки для визуального баланса третей.");
-  } else {
-    tips.push("У тебя компактное, 'боевое' лицо (высокий FWHR). Тебе пойдут короткие стрижки и укладки с объемом наверх.");
-  }
-
-  if (asym < 90) {
-    tips.push(`Симметрия ${asym.toFixed(0)}%. Спи исключительно на спине. Жуй пищу равномерно на обеих сторонах челюсти.`);
-  }
-
-  tips.push("Контролируй натрий (соль) до 3г в день, чтобы сливать воду из-под кожи и обнажить углы челюсти.");
-  
-  document.getElementById('tips-list').innerHTML = tips.map(t => `<li>${t}</li>`).join('');
+renderHome();show('home');
+async function boot(){
+ if(!API())return;
+ try{S.hist=arr(await api('GET','/history')).map(x=>({...x,th:x.th||x.thumb||x.img,m:(x.m||x.metrics||[]).map(nm),sym:x.sym||x.symmetry})).filter(x=>x.m.length);renderHome()}catch(e){toast('Нет связи с сервером')}
+ const sp=(tg&&tg.initDataUnsafe&&tg.initDataUnsafe.start_param)||new URLSearchParams(location.search).get('photo')||'',id=sp.replace(/^p/,'');
+ if(id){try{const p=arr(await api('GET','/photos')).find(x=>String(x.id)===id);if(p){await useBot(p);go('gender')}}catch(e){}}
 }
+boot();
 
-
-// ==========================================
-// 4. ГАЛЕРЕЯ И СОХРАНЕНИЕ
-// ==========================================
-const galleryDays = [1, 7, 14, 28, 31];
-let activeDay = null;
-
-function renderGallery() {
-  const c = document.getElementById('gallery-container');
-  c.innerHTML = galleryDays.map(d => {
-    const photoData = localStorage.getItem(`proto31_gal_${d}`);
-    return `
-      <div class="gal-item ${photoData ? '' : 'empty'}" data-day="${d}">
-        ${photoData ? `<img src="${photoData}">` : ''}
-        <div class="ui">
-          <i data-lucide="${photoData ? 'refresh-cw' : 'plus'}" style="width:28px;height:28px;margin-bottom:8px"></i>
-          <span class="text-xs">${photoData ? 'Обновить' : 'Добавить'}</span>
-        </div>
-        <div class="gal-label">День ${d}</div>
-      </div>
-    `;
-  }).join('');
-  lucide.createIcons();
-}
-
-document.getElementById('gallery-container').addEventListener('click', (e) => {
-  const item = e.target.closest('.gal-item');
-  if(!item) return;
-  activeDay = item.dataset.day;
-  document.getElementById('camera-input').click();
-});
-
-document.getElementById('camera-input').addEventListener('change', (e) => {
-  const file = e.target.files[0];
-  if(!file || !activeDay) return;
-  
-  const reader = new FileReader();
-  reader.onload = (event) => {
-    const img = new Image();
-    img.onload = () => {
-      // Сжимаем фото перед сохранением в память
-      const canvas = document.createElement('canvas');
-      const MAX_WIDTH = 600;
-      const scaleSize = MAX_WIDTH / img.width;
-      canvas.width = MAX_WIDTH;
-      canvas.height = img.height * scaleSize;
-      
-      const ctx = canvas.getContext('2d');
-      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-      
-      const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
-      localStorage.setItem(`proto31_gal_${activeDay}`, dataUrl);
-      
-      renderGallery();
-      if(activeDay == 1) checkAndRunScanner(); // Обновляем сетку, если это базовое фото
-    };
-    img.src = event.target.result;
-  };
-  reader.readAsDataURL(file);
-});
-
-
-// ==========================================
-// 5. ПРОТОКОЛ / ЗАДАЧИ
-// ==========================================
-const tasks = [
-  { id: 'water', title: 'Водный баланс', desc: 'Стакан теплой воды до еды' },
-  { id: 'mewing', title: 'Mewing', desc: 'Язык прижат к нёбу, дыхание носом' },
-  { id: 'massage', title: 'Лимфодренаж', desc: 'Массаж лица 3 мин (гуаша/руки)' },
-  { id: 'posture', title: 'Осанка у стены', desc: 'Затылок, лопатки, таз - 2 мин' },
-  { id: 'sleep', title: 'Режим костей', desc: 'Сон 8 часов строго на спине' }
-];
-
-const todayDate = new Date().toLocaleDateString('sv');
-let progress = JSON.parse(localStorage.getItem('proto31_tasks') || '{}');
-if(!progress[todayDate]) progress[todayDate] = {};
-
-function renderTasks() {
-  const c = document.getElementById('tasks-container');
-  c.innerHTML = tasks.map(t => {
-    const isOn = progress[todayDate][t.id];
-    return `
-      <button class="task ${isOn ? 'on' : ''}" data-id="${t.id}">
-        <div class="box"><i data-lucide="check" style="width:14px"></i></div>
-        <div class="flex-1 text-left"><b>${t.title}</b><p>${t.desc}</p></div>
-      </button>
-    `;
-  }).join('');
-  lucide.createIcons();
-}
-
-document.getElementById('tasks-container').addEventListener('click', (e) => {
-  const btn = e.target.closest('.task');
-  if(!btn) return;
-  const tid = btn.dataset.id;
-  progress[todayDate][tid] = !progress[todayDate][tid];
-  localStorage.setItem('proto31_tasks', JSON.stringify(progress));
-  if(tg && tg.HapticFeedback) tg.HapticFeedback.selectionChanged();
-  renderTasks();
-});
-
-// Инициализация интерфейса
-lucide.createIcons();
-renderGallery();
-renderTasks();
-checkAndRunScanner();
 </script>
 </body>
 </html>

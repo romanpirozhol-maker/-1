@@ -288,7 +288,7 @@ const tg=window.Telegram&&Telegram.WebApp,$=s=>document.querySelector(s),$$=s=>[
    DELETE /history/:id
  Открытие из бота с конкретным фото: ссылка t.me/<бот>/<app>?startapp=p<id> или ?photo=<id> в URL кнопки web_app.
 */
-const CONFIG={API_URL:'http://178.20.44.99:8000'};
+const CONFIG={API_URL:' https://clean-brooms-smoke.loca.lt'};
 const API=()=>!!CONFIG.API_URL;
 async function api(m,p,b){const r=await fetch(CONFIG.API_URL+p,{method:m,headers:{'Content-Type':'application/json','Authorization':'tma '+((tg&&tg.initData)||'')},body:b?JSON.stringify(b):undefined});if(!r.ok)throw new Error(r.status);return r.status===204?{}:r.json()}
 const wait=ms=>new Promise(r=>setTimeout(r,ms)),arr=r=>Array.isArray(r)?r:(r&&r.items)||[];
